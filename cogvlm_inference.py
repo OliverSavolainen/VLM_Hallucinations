@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument("--query", type=str, default="Describe the image accurately and in detail.", help="Default query for captioning")
     parser.add_argument("--fp16", action="store_true", help="Enable half-precision floating point (16-bit)")
     parser.add_argument("--bf16", action="store_true", help="Enable bfloat16 precision floating point (16-bit)")
+    parser.add_argument("--max_new_tokens", type=int, default=1024, help="Max new tokens")
     return parser.parse_args()
 
 def load_model(from_pretrained, use_bfloat16, quantization=None):
@@ -90,7 +91,12 @@ def main():
                     if image is not None
                     else None,
                 }
+                gen_kwargs = {
+                    "max_new_tokens": args.max_new_tokens,
+                }
+
                 with torch.no_grad():
+                    outputs = model.generate(**inputs, **gen_kwargs)
                     outputs = model.generate(**inputs)
                     outputs = outputs[:, inputs["input_ids"].shape[1] :]
                     response = tokenizer.decode(outputs[0])
