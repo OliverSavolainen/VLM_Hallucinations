@@ -2,7 +2,7 @@ import json
 import argparse
 from sentence_transformers import SentenceTransformer, util
 import jsonlines
-
+"""
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="Match objects in images to COCO classes using semantic similarity and output results.")
 parser.add_argument("--jsonl_file", type=str, required=True, help="Path to the JSONL file containing image object data.")
@@ -27,11 +27,10 @@ coco_classes = [
     "sink", "refrigerator", "book", "clock", "vase",
     "scissors", "teddy bear", "hair drier", "toothbrush"
 ]
-
 # Initialize the sentence transformer model
 model = SentenceTransformer('all-MiniLM-L6-v2')
-
-def find_coco_matches(jsonl_file, output_file, coco_classes):
+"""
+def find_coco_matches(jsonl_file, output_file, coco_classes,model):
     coco_embeddings = model.encode(coco_classes, convert_to_tensor=True)
 
     with jsonlines.open(jsonl_file) as reader, jsonlines.open(output_file, mode='w') as writer:
@@ -50,4 +49,4 @@ def find_coco_matches(jsonl_file, output_file, coco_classes):
             writer.write(obj)
 
 # Process the JSONL file to find matches and write results
-find_coco_matches(args.jsonl_file, args.output_file, coco_classes)
+#find_coco_matches(args.jsonl_file, args.output_file, coco_classes)
