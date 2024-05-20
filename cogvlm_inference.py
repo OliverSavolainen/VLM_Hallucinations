@@ -97,7 +97,6 @@ def main():
 
                 with torch.no_grad():
                     outputs = model.generate(**inputs, **gen_kwargs)
-                    outputs = model.generate(**inputs)
                     outputs = outputs[:, inputs["input_ids"].shape[1] :]
                     response = tokenizer.decode(outputs[0])
                     response = response.split("</s>")[0]
