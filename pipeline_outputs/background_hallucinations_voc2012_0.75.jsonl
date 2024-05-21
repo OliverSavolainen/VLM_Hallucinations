@@ -1,0 +1,16 @@
+{"question_id": "COCO_val2014_000000265719.jpg", "object_name": "Person", "bounding_box": "000,117,708,997", "background_ratio": 0.4837539063640877, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000265719.jpg", "object_name": "Spoon", "bounding_box": "546,469,650,528", "background_ratio": 0.0, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000265719.jpg", "object_name": "Fork", "bounding_box": "546,469,650,528", "background_ratio": 0.0, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000265719.jpg", "object_name": "Table", "bounding_box": "424,728,998,997", "background_ratio": 0.9267001114827201, "is_hallucination": true}
+{"question_id": "COCO_val2014_000000297078.jpg", "object_name": "Backpack", "bounding_box": "082,290,150,477", "background_ratio": 1.0, "is_hallucination": true}
+{"question_id": "COCO_val2014_000000297078.jpg", "object_name": "Person", "bounding_box": "040,208,296,813", "background_ratio": 1.0, "is_hallucination": true}
+{"question_id": "COCO_val2014_000000297078.jpg", "object_name": "Skis", "bounding_box": "000,712,340,773", "background_ratio": 0.0, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000210789.jpg", "object_name": "Truck", "bounding_box": "616,292,970,438", "background_ratio": 0.6502264492753623, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000210789.jpg", "object_name": "Car", "bounding_box": "616,292,970,438", "background_ratio": 0.6502264492753623, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000210789.jpg", "object_name": "Person", "bounding_box": "410,262,648,828", "background_ratio": 0.6711039637868906, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Person", "bounding_box": "000,238,801,998", "background_ratio": 0.5756568627450981, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Sandwich", "bounding_box": "777,604,906,676", "background_ratio": 0.14551764025448236, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Dog", "bounding_box": "786,606,906,674", "background_ratio": 0.15618686868686868, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Handbag", "bounding_box": "564,236,834,414", "background_ratio": 0.03571633649153029, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Backpack", "bounding_box": "564,226,834,414", "background_ratio": 0.034904601571268234, "is_hallucination": false}
+{"question_id": "COCO_val2014_000000429109.jpg", "object_name": "Person", "bounding_box": "302,730,328,800", "background_ratio": 0.0, "is_hallucination": false}

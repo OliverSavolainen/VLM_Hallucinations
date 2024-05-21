@@ -7,15 +7,15 @@ from sentence_transformers import SentenceTransformer, util
 
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="Grounded VLM Hallucination Evaluation Pipeline")
-parser.add_argument("--input_file", type=str, default="bbox_pope_images/outputs.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
-parser.add_argument("--labels", type=str, default="bbox_pope_images/labels.json",  help="Path to the JSONL file containing grountruth bounding boxes.")
+parser.add_argument("--input_file", type=str, default="model_outputs/outputs.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
+parser.add_argument("--labels", type=str, default="data/bbox_pope_images/labels.json",  help="Path to the JSONL file containing grountruth bounding boxes.")
 
 
-parser.add_argument("--output_file", type=str, default="bbox_hallucinations.jsonl",help="Path to results JSONL file.")
+parser.add_argument("--output_file", type=str, default="pipeline_outputs/bbox_hallucinations.jsonl",help="Path to results JSONL file.")
 
-parser.add_argument("--matched_objects_output_file", type=str, default="matched.jsonl",help="Path to output the results JSONL file.")
-parser.add_argument("--object_classes_file",type=str,default="coco_classes.jsonl",help="Path to JSONL file containing list of object classes to match the VLM captions against.")
-parser.add_argument("--bbox_output_file",type=str,default='objects_with_bounding_boxes.jsonl',help="Path to JSONL file for extracted objects and their bounding boxes.")
+parser.add_argument("--matched_objects_output_file", type=str, default="intermediate_outputs/matched.jsonl",help="Path to output the results JSONL file.")
+parser.add_argument("--object_classes_file",type=str,default="data/coco_classes.jsonl",help="Path to JSONL file containing list of object classes to match the VLM captions against.")
+parser.add_argument("--bbox_output_file",type=str,default='intermediate_outputs/objects_with_bounding_boxes.jsonl',help="Path to JSONL file for extracted objects and their bounding boxes.")
 parser.add_argument("--sentence_transformer", type=str, default="all-MiniLM-L6-v2",help="Pretrained sentence transformer model to be used for matching extracted objects to target object classes.")
 args = parser.parse_args()
 

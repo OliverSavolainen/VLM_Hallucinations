@@ -1,4 +1,4 @@
-{"question_id":"COCO_val2014_000000006033.jpg","object_name":"Man","bounding_box":[188,83,367,533],"IoU":0.9452779243,"hallucinates":false}
+"question_id":"COCO_val2014_000000006033.jpg","object_name":"Man","bounding_box":[188,83,367,533],"IoU":0.9452779243,"hallucinates":false}
 {"question_id":"COCO_val2014_000000006033.jpg","object_name":"Goat","bounding_box":[125,293,290,549],"IoU":0.8757847018,"hallucinates":false}
 {"question_id":"COCO_val2014_000000006033.jpg","object_name":"Van","bounding_box":[0,0,450,363],"IoU":0.9397177462,"hallucinates":false}
 {"question_id":"COCO_val2014_000000012333.jpg","object_name":"Woman","bounding_box":[401,79,494,262],"IoU":0.973983784,"hallucinates":false}

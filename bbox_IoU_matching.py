@@ -38,7 +38,7 @@ def convert_bbox_format(bboxes):
         converted_bboxes.append([x_min, y_min, x_max, y_max])
     return converted_bboxes
 
-def match_bbox_iou(labels_path='bbox_pope_images/labels.json',bboxes_path ='objects_with_bounding_boxes.jsonl', output_path="bbox_hallucinations.jsonl"):
+def match_bbox_iou(labels_path='data/bbox_pope_images/labels.json',bboxes_path ='intermediate_outputs/objects_with_bounding_boxes.jsonl', output_path="pipeline_outputs/bbox_hallucinations.jsonl"):
 
     LABELS_PATH = labels_path
     BBOXES_PATH = bboxes_path

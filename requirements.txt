@@ -1,0 +1,7 @@
+jsonlines~=4.0.0
+torch~=2.3.0+cu121
+shortuuid~=1.0.13
+requests~=2.32.1
+pillow~=10.2.0
+transformers~=4.41.0
+pandas~=2.2.2
