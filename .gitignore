@@ -1,3 +1,2 @@
 *.idea/
-__pycache__/background_bbox_matching.cpython-310.pyc
-__pycache__/object_extraction.cpython-310.pyc
+__pycache__/

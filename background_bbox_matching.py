@@ -4,7 +4,7 @@ import os
 import h5py
 
 
-def match_bbox_with_background(extracted_objects__path='intermediate_outputs/objects_with_bounding_boxes.jsonl',
+def match_bbox_with_background(extracted_objects_path='intermediate_outputs/objects_with_bounding_boxes.jsonl',
                                segmentations_path='data/segmentation_masks/segmentation_masks_voc2012.h5',
                                output_path="pipeline_outputs/object_background_matching.jsonl",
                                hallucination_threshold=0.75):
@@ -15,7 +15,7 @@ def match_bbox_with_background(extracted_objects__path='intermediate_outputs/obj
         for image_name in hf.keys():
             segmentations[image_name] = hf.get(image_name)[:]
     # Read objects and bounding boxes
-    with open(extracted_objects__path, 'r') as file:
+    with open(extracted_objects_path, 'r') as file:
         extracted_objects = [json.loads(line) for line in file]
 
     for object in extracted_objects:
