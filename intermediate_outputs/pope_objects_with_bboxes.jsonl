@@ -1,0 +1,16 @@
+{"question_id": "COCO_val2014_000000265719.jpg", "object_name": "Person", "bounding_box": "000,117,708,997"}
+{"question_id": "COCO_val2014_000000265719.jpg", "object_name": "Spoon", "bounding_box": "546,469,650,528"}
+{"question_id": "COCO_val2014_000000265719.jpg", "object_name": "Fork", "bounding_box": "546,469,650,528"}
+{"question_id": "COCO_val2014_000000265719.jpg", "object_name": "Table", "bounding_box": "424,728,998,997"}
+{"question_id": "COCO_val2014_000000297078.jpg", "object_name": "Backpack", "bounding_box": "082,290,150,477"}
+{"question_id": "COCO_val2014_000000297078.jpg", "object_name": "Person", "bounding_box": "040,208,296,813"}
+{"question_id": "COCO_val2014_000000297078.jpg", "object_name": "Skis", "bounding_box": "000,712,340,773"}
+{"question_id": "COCO_val2014_000000210789.jpg", "object_name": "Truck", "bounding_box": "616,292,970,438"}
+{"question_id": "COCO_val2014_000000210789.jpg", "object_name": "Car", "bounding_box": "616,292,970,438"}
+{"question_id": "COCO_val2014_000000210789.jpg", "object_name": "Person", "bounding_box": "410,262,648,828"}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Person", "bounding_box": "000,238,801,998"}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Sandwich", "bounding_box": "777,604,906,676"}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Dog", "bounding_box": "786,606,906,674"}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Handbag", "bounding_box": "564,236,834,414"}
+{"question_id": "COCO_val2014_000000569839.jpg", "object_name": "Backpack", "bounding_box": "564,226,834,414"}
+{"question_id": "COCO_val2014_000000429109.jpg", "object_name": "Person", "bounding_box": "302,730,328,800"}

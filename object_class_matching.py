@@ -48,5 +48,24 @@ def find_coco_matches(jsonl_file, output_file, coco_classes,model):
             obj['class'] = matched_class
             writer.write(obj)
 
+def match_object_classes(jsonl_file, output_file, model, threshold):
+
+    with jsonlines.open(jsonl_file) as reader, jsonlines.open(output_file, mode='w') as writer:
+        for obj in reader:
+            object_name = obj['object_name']
+            object_embedding = model.encode(object_name, convert_to_tensor=True)
+            matched_class = obj['bbox_match_object']
+            gt_object_embedding = model.encode(matched_class, convert_to_tensor=True)
+            cosine_score = util.cos_sim(object_embedding, gt_object_embedding)
+
+            if cosine_score < threshold:
+                obj['is_misclassification'] = True
+            else:
+                obj['is_misclassification'] = False
+
+            # Print and write the output with the matched class
+            print(f"Image ID: {obj['question_id']}, Object: {object_name}, Matched COCO Class: {matched_class}, Score: {cosine_score}")
+            writer.write(obj)
+
 # Process the JSONL file to find matches and write results
 #find_coco_matches(args.jsonl_file, args.output_file, coco_classes)
