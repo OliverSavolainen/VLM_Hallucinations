@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument("--max_new_tokens", type=int, default=512, help="Max new tokens")
     parser.add_argument("--batch_number", type=int, default=1, help="Batch number to process")
     parser.add_argument("--total_batches", type=int, default=4, help="Total number of batches")
+    parser.add_argument("--template", type=str, help="Template for generating new prompts, includes <expr> as a placeholder.")
     return parser.parse_args()
 
 def load_model(args):
@@ -83,6 +84,17 @@ def load_images(args):
         images[name] = image
     return images
 
+def extract_object(prompt):
+    """Extracts the object from the given prompt using regex."""
+    match = re.search(r"Is there a (.*?) in the image\?", prompt)
+    if match:
+        return match.group(1)
+    return None
+
+def create_new_prompt(template, obj):
+    """Replaces <expr> in the template with the object extracted."""
+    return template.replace("<expr>", obj)
+
 def main():
     args = parse_args()
     if args.bf16:
@@ -96,11 +108,18 @@ def main():
     if args.prompts_file:
         prompts_dict = load_prompts(args.prompts_file)
 
+
     with open("cogvlm_outputs.jsonl", "w") as ans_file:
         for filename, image in images.items():
             queries = prompts_dict.get(filename, [args.query]) if args.prompts_file else [args.query]
             
             for query in queries:
+                if args.template:
+                    object_name = extract_object(query)
+                    if object_name:
+                        query = create_new_prompt(args.template, object_name)
+                    else:
+                        print("Problem with converting the template")
                 input_by_model = model.build_conversation_input_ids(
                 tokenizer, query=query, history=[], images=[image]
                 )
