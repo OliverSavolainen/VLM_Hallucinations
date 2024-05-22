@@ -32,7 +32,7 @@ def load_model(from_pretrained, use_bfloat16, quantization=None):
         from_pretrained,
         torch_dtype=torch_dtype,
         low_cpu_mem_usage=True,
-        load_in_16bit=quantization is not None,
+        load_in_8bit=quantization is not None,
         trust_remote_code=True,
     ).eval()
     return model, device
