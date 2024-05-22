@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument("--prompts_file", type=str, help="Optional path to a JSONL file containing prompts for each image.")
     parser.add_argument("--from_pretrained", type=str, default="THUDM/cogvlm-grounding-generalist-hf", help="Pretrained model identifier or path")
     parser.add_argument("--local_tokenizer", type=str, default="lmsys/vicuna-7b-v1.5", help="Tokenizer identifier or path")
-    parser.add_argument("--quant", type=int, choices=[4, 8, 16], help="Quantization bits")
+    parser.add_argument("--quant", type=int, default=16, choices=[4, 8, 16], help="Quantization bits")
     parser.add_argument("--query", type=str, default="Describe the image accurately and in detail.", help="Default query for captioning")
     parser.add_argument("--fp16", action="store_true", help="Enable half-precision floating point (16-bit)")
     parser.add_argument("--bf16", action="store_true", help="Enable bfloat16 precision floating point (16-bit)")
@@ -32,7 +32,7 @@ def load_model(from_pretrained, use_bfloat16, quantization=None):
         from_pretrained,
         torch_dtype=torch_dtype,
         low_cpu_mem_usage=True,
-        load_in_4bit=quantization is not None,
+        load_in_16bit=quantization is not None,
         trust_remote_code=True,
     ).eval()
     return model, device
