@@ -7,6 +7,7 @@ import json
 import shortuuid
 import requests
 from io import BytesIO
+import math
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Process images for captioning using pre-trained models.")
@@ -19,7 +20,9 @@ def parse_args():
     parser.add_argument("--query", type=str, default="Describe the image accurately and in detail.", help="Default query for captioning")
     parser.add_argument("--fp16", action="store_true", help="Enable half-precision floating point (16-bit)")
     parser.add_argument("--bf16", action="store_true", help="Enable bfloat16 precision floating point (16-bit)")
-    parser.add_argument("--max_new_tokens", type=int, default=1024, help="Max new tokens")
+    parser.add_argument("--max_new_tokens", type=int, default=512, help="Max new tokens")
+    parser.add_argument("--batch_number", type=int, default=1, help="Batch number to process")
+    parser.add_argument("--total_batches", type=int, default=4, help="Total number of batches")
     return parser.parse_args()
 
 def load_model(from_pretrained, use_bfloat16, quantization=None):
@@ -52,26 +55,40 @@ def load_images(args):
         image_files = {filename: os.path.join(args.folder_path, filename)
                        for filename in os.listdir(args.folder_path)
                        if filename.endswith((".jpg", ".png"))}
-        images = {name: Image.open(path).convert("RGB") for name, path in image_files.items()}
-        return images
     elif args.url_file:
         with open(args.url_file, 'r') as file:
             data = json.load(file)
-            images = {item['file_name']: Image.open(BytesIO(requests.get(item['coco_url']).content)).convert("RGB")
-                      for item in data['images']}
-        return images
+            image_files = {item['file_name']: item['coco_url']
+                           for item in data['images']}
     else:
         raise ValueError("No valid input source provided. Please specify a folder path or a JSON file.")
+    
+    # Apply batching
+    items_per_batch = math.ceil(len(image_files) / args.total_batches)
+    start_index = (args.batch_number - 1) * items_per_batch
+    end_index = start_index + items_per_batch
+    batched_files = dict(list(image_files.items())[start_index:end_index])
+
+    images = {}
+    for name, path in batched_files.items():
+        if args.url_file:
+            response = requests.get(path)
+            image = Image.open(BytesIO(response.content)).convert("RGB")
+        else:
+            image = Image.open(path).convert("RGB")
+        images[name] = image
+    return images
 
 def main():
     args = parse_args()
-    model, DEVICE = load_model(args.from_pretrained, args.bf16, args.quant)
-    images = load_images(args)
-    tokenizer = LlamaTokenizer.from_pretrained(args.local_tokenizer)
     if args.bf16:
         torch_type = torch.bfloat16
     else:
         torch_type = torch.float16
+    model, device = load_model(args.from_pretrained, args.bf16, args.quant)
+    images = load_images(args)
+    tokenizer = LlamaTokenizer.from_pretrained(args.local_tokenizer)
+
     if args.prompts_file:
         prompts_dict = load_prompts(args.prompts_file)
 
@@ -84,10 +101,10 @@ def main():
                 tokenizer, query=query, history=[], images=[image]
                 )
                 inputs = {
-                    "input_ids": input_by_model["input_ids"].unsqueeze(0).to(DEVICE),
-                    "token_type_ids": input_by_model["token_type_ids"].unsqueeze(0).to(DEVICE),
-                    "attention_mask": input_by_model["attention_mask"].unsqueeze(0).to(DEVICE),
-                    "images": [[input_by_model["images"][0].to(DEVICE).to(torch_type)]]
+                    "input_ids": input_by_model["input_ids"].unsqueeze(0).to(device),
+                    "token_type_ids": input_by_model["token_type_ids"].unsqueeze(0).to(device),
+                    "attention_mask": input_by_model["attention_mask"].unsqueeze(0).to(device),
+                    "images": [[input_by_model["images"][0].to(device).to(torch_type)]]
                     if image is not None
                     else None,
                 }
@@ -98,7 +115,7 @@ def main():
                 with torch.no_grad():
                     outputs = model.generate(**inputs, **gen_kwargs)
                     outputs = outputs[:, inputs["input_ids"].shape[1] :]
-                    response = tokenizer.decode(outputs[0])
+                    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
                     response = response.split("</s>")[0]
                     print(query)
                     print("\nCog:", response)
