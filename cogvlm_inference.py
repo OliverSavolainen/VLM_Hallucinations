@@ -36,7 +36,7 @@ def load_model(args):
         args.from_pretrained,
         torch_dtype=torch_dtype,
         low_cpu_mem_usage=True,
-        quantization_config=quantization_config
+        quantization_config=quantization_config,
         trust_remote_code=True,
     ).eval()
     return model, device
