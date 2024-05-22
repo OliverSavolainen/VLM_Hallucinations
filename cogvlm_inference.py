@@ -145,6 +145,7 @@ def main():
                     outputs = outputs[:, inputs["input_ids"].shape[1] :]
                     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
                     response = response.split("</s>")[0]
+                    print(f"Image: {filename}")
                     print(query)
                     print("\nCog:", response)
 
