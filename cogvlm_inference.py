@@ -1,7 +1,7 @@
 import argparse
 import torch
 from PIL import Image
-from transformers import AutoModelForCausalLM, LlamaTokenizer
+from transformers import AutoModelForCausalLM, LlamaTokenizer, BitsAndBytesConfig
 import os
 import json
 import shortuuid
@@ -25,14 +25,18 @@ def parse_args():
     parser.add_argument("--total_batches", type=int, default=4, help="Total number of batches")
     return parser.parse_args()
 
-def load_model(from_pretrained, use_bfloat16, quantization=None):
+def load_model(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    torch_dtype = torch.bfloat16 if use_bfloat16 else torch.float16
+    torch_dtype = torch.bfloat16 if args.bf16 else torch.float16
+    quantization_config = BitsAndBytesConfig(
+        quantize_weights=True,
+        quantization_bits=args.quant
+    )
     model = AutoModelForCausalLM.from_pretrained(
-        from_pretrained,
+        args.from_pretrained,
         torch_dtype=torch_dtype,
         low_cpu_mem_usage=True,
-        load_in_8bit=quantization is not None,
+        quantization_config=quantization_config
         trust_remote_code=True,
     ).eval()
     return model, device
@@ -85,7 +89,7 @@ def main():
         torch_type = torch.bfloat16
     else:
         torch_type = torch.float16
-    model, device = load_model(args.from_pretrained, args.bf16, args.quant)
+    model, device = load_model(args)
     images = load_images(args)
     tokenizer = LlamaTokenizer.from_pretrained(args.local_tokenizer)
 
