@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument("--prompts_file", type=str, help="Optional path to a JSONL file containing prompts for each image.")
     parser.add_argument("--from_pretrained", type=str, default="THUDM/cogvlm-grounding-generalist-hf", help="Pretrained model identifier or path")
     parser.add_argument("--local_tokenizer", type=str, default="lmsys/vicuna-7b-v1.5", help="Tokenizer identifier or path")
-    parser.add_argument("--quant", type=int, default=16, choices=[4, 8, 16], help="Quantization bits")
+    parser.add_argument("--quant", type=int, default=8, help="Quantization bits")
     parser.add_argument("--query", type=str, default="Describe the image accurately and in detail.", help="Default query for captioning")
     parser.add_argument("--fp16", action="store_true", help="Enable half-precision floating point (16-bit)")
     parser.add_argument("--bf16", action="store_true", help="Enable bfloat16 precision floating point (16-bit)")
@@ -29,8 +29,8 @@ def load_model(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     torch_dtype = torch.bfloat16 if args.bf16 else torch.float16
     quantization_config = BitsAndBytesConfig(
-        quantize_weights=True,
-        quantization_bits=args.quant
+        load_in_8bit=(args.quant == 8),
+        load_in_4bit=(args.quant == 4)
     )
     model = AutoModelForCausalLM.from_pretrained(
         args.from_pretrained,
