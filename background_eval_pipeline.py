@@ -24,5 +24,5 @@ args = parser.parse_args()
 object_extraction.extract_objects(args.input_file, args.bbox_output_file)
 
 # Check if bbox corresponds to background or foreground
-background_bbox_matching.match_bbox_with_background(extracted_objects__path=args.bbox_output_file,segmentations_path=args.segmentation_masks,output_path=args.output_file, hallucination_threshold=args.hallucination_threshold)
+background_bbox_matching.match_bbox_with_background(extracted_objects_path=args.bbox_output_file,segmentations_path=args.segmentation_masks,output_path=args.output_file, hallucination_threshold=args.hallucination_threshold)
 
