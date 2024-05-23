@@ -11,7 +11,6 @@ parser = argparse.ArgumentParser(description="Grounded VLM Hallucination Evaluat
 parser.add_argument("--input_file", type=str, default="model_outputs/outputs.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
 # Ground truth labels
 parser.add_argument("--labels", type=str, default="data/bbox_pope_images/labels.json",  help="Path to the JSONL file containing grountruth bounding boxes.")
-parser.add_argument("--object_classes_file",type=str,default="data/coco_classes.jsonl",help="Path to JSONL file containing list of object classes to match the VLM captions against.")
 # Final output file
 parser.add_argument("--output_file", type=str, default="pipeline_outputs/bbox_hallucinations.jsonl",help="Path to results JSONL file.")
 # Intermediate outputs
@@ -35,7 +34,6 @@ object_extraction.extract_objects(input_file_path=args.input_file,
 # Match bboxes
 bbox_iou.match_bboxes(labels_path=args.labels,
                       extracted_objects_path=args.extracted_objects_file,
-                      object_categories_path=args.object_classes_file,
                       output_path=args.iou_matched_objects_file,
                       hallucination_threshold=args.hallucination_threshold)
 
