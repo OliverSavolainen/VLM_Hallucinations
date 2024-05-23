@@ -73,9 +73,13 @@ def load_images(args):
     start_index = (args.batch_number - 1) * items_per_batch
     end_index = start_index + items_per_batch
     batched_files = dict(list(image_files.items())[start_index:end_index])
-
+    
+    total_images = len(batched_files)
+    print(f"Total images to process in this batch: {total_images}")
+    
     images = {}
-    for name, path in batched_files.items():
+    for i, (name, path) in enumerate(batched_files.items(), start=1):
+        print(f"Processing image {i} of {total_images}: {name}")
         if args.url_file:
             response = requests.get(path)
             image = Image.open(BytesIO(response.content)).convert("RGB")
@@ -108,8 +112,9 @@ def main():
     if args.prompts_file:
         prompts_dict = load_prompts(args.prompts_file)
 
+    file_mode = 'a' if os.path.exists("cogvlm_outputs.jsonl") else 'w'
 
-    with open("cogvlm_outputs.jsonl", "w") as ans_file:
+    with open("cogvlm_outputs.jsonl", file_mode) as ans_file:
         for filename, image in images.items():
             queries = prompts_dict.get(filename, [args.query]) if args.prompts_file else [args.query]
             
@@ -140,6 +145,7 @@ def main():
                     outputs = outputs[:, inputs["input_ids"].shape[1] :]
                     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
                     response = response.split("</s>")[0]
+                    print(f"Image: {filename}")
                     print(query)
                     print("\nCog:", response)
 
