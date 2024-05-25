@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="Grounded VLM Hallucination Evaluation Pipeline")
 # Input answer file
-parser.add_argument("--input_file", type=str, default="model_outputs/outputs.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
+parser.add_argument("--input_file", type=str, default="captioning_outputs_cogvlm.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
 # Ground truth labels
 parser.add_argument("--labels", type=str, default="data/bbox_pope_images/labels.json",  help="Path to the JSONL file containing grountruth bounding boxes.")
 # Final output file

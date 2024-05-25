@@ -1,14 +1,14 @@
 import json
 import argparse
-import object_extraction
+import pope_object_extraction
 import background_bbox_matching
 from sentence_transformers import SentenceTransformer, util
 
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="Grounded VLM Hallucination Evaluation with foreground background matching pipeline")
 ##TODO change it to POPE answer files
-parser.add_argument("--input_file", type=str, default="model_outputs/pope_outputs.jsonl", help="Path to the JSONL file containing answers to POPE.")
-parser.add_argument("--segmentation_masks", type=str, default="data/segmentation_masks/segmentation_masks_voc2012.h5",  help="Path to the h5 file containing segmentation masks.")
+parser.add_argument("--input_file", type=str, default="cogvlm_outputs.jsonl", help="Path to the JSONL file containing answers to POPE.")
+parser.add_argument("--segmentation_masks", type=str, default="data/segmentation_masks/segmentation_masks_ade20k.h5",  help="Path to the h5 file containing segmentation masks.")
 
 
 parser.add_argument("--output_file", type=str, default="pipeline_outputs/background_hallucinations.jsonl",help="Path to results JSONL file.")
@@ -21,7 +21,7 @@ parser.add_argument("--sentence_transformer", type=str, default="all-MiniLM-L6-v
 args = parser.parse_args()
 
 # Extract object and bounding boxes
-object_extraction.extract_objects(args.input_file, args.bbox_output_file)
+pope_object_extraction.extract_objects(args.input_file, args.bbox_output_file)
 
 # Check if bbox corresponds to background or foreground
 background_bbox_matching.match_bbox_with_background(extracted_objects_path=args.bbox_output_file,segmentations_path=args.segmentation_masks,output_path=args.output_file, hallucination_threshold=args.hallucination_threshold)
