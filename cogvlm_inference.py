@@ -24,6 +24,7 @@ def parse_args():
     parser.add_argument("--batch_number", type=int, default=1, help="Batch number to process")
     parser.add_argument("--total_batches", type=int, default=4, help="Total number of batches")
     parser.add_argument("--template", type=str, help="Template for generating new prompts, includes <expr> as a placeholder.")
+    parser.add_argument("--remove_second_line", action="store_true", help="Remove everything after a newline in the prompt")
     return parser.parse_args()
 
 def load_model(args):
@@ -42,13 +43,16 @@ def load_model(args):
     ).eval()
     return model, device
 
-def load_prompts(prompts_file):
+def load_prompts(prompts_file, remove_second_line):
     prompt_dict = {}
     with open(prompts_file, 'r') as file:
         for line in file:
             data = json.loads(line)
             image_name = data['image']
             prompt_text = data['text']
+            if remove_second_line:
+                prompt_text = prompt_text.split('\n', 1)[0]
+            
             if image_name not in prompt_dict:
                 prompt_dict[image_name] = []
             if prompt_text not in prompt_dict[image_name]:
@@ -110,7 +114,7 @@ def main():
     tokenizer = LlamaTokenizer.from_pretrained(args.local_tokenizer)
 
     if args.prompts_file:
-        prompts_dict = load_prompts(args.prompts_file)
+        prompts_dict = load_prompts(args.prompts_file, args.remove_second_line)
 
     file_mode = 'a' if os.path.exists("cogvlm_outputs.jsonl") else 'w'
 
