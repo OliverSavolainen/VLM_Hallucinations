@@ -2,57 +2,12 @@ import argparse
 import torch
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-from torchvision import transforms
 import os
 import json
 import requests
 from io import BytesIO
 import math
-from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
-
-class ImageTextDataset(Dataset):
-    def __init__(self, image_files, tokenizer, prompt_template, prompts_dict=None, query=None):
-        self.image_files = image_files
-        self.tokenizer = tokenizer
-        self.prompt_template = prompt_template
-        self.prompts_dict = prompts_dict
-        self.query = query
-        self.data = self._prepare_data()
-
-    def _prepare_data(self):
-        data = []
-        for filename, path in self.image_files.items():
-            if self.prompts_dict and filename in self.prompts_dict:
-                for prompt_text in self.prompts_dict[filename]:
-                    data.append((filename, path, prompt_text))
-            else:
-                data.append((filename, path, self.query))
-        return data
-
-    def __len__(self):
-        return len(self.data)
-    def preprocess_image(self, image):
-        mean, std = [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]
-        preprocess_transform = transforms.Compose([
-            transforms.Resize((448, 448)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=mean, std=std)
-        ])
-        return preprocess_transform(image).unsqueeze(0)
-
-    def __getitem__(self, idx):
-        filename, path, prompt_text = self.data[idx]
-        if path.startswith('http'):
-            response = requests.get(path)
-            image = Image.open(BytesIO(response.content)).convert("RGB")
-        else:
-            image = Image.open(path).convert("RGB")
-        image_tensor = self.preprocess_image(image)
-        input_text = self.prompt_template.format("", prompt_text)
-        input_ids = self.tokenizer(input_text, return_tensors="pt").input_ids.squeeze()
-        attention_mask = self.tokenizer(input_text, return_tensors="pt").attention_mask.squeeze()
-        return input_ids, attention_mask, image_tensor, filename, prompt_text
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Process images for captioning using pre-trained models.")
@@ -62,10 +17,8 @@ def parse_args():
     parser.add_argument("--from_pretrained", type=str, default="Qwen/Qwen-VL", help="Pretrained model identifier or path")
     parser.add_argument("--local_tokenizer", type=str, default="Qwen/Qwen-VL", help="Tokenizer identifier or path")
     parser.add_argument("--quant", type=int, default=4, help="Quantization bits")
-    parser.add_argument("--query", type=str, default="Describe the image accurately and in detail.", help="Default query for captioning")
+    parser.add_argument("--query", type=str, default="Generate the caption in English with grounding:", help="Default query for captioning")
     parser.add_argument("--max_new_tokens", type=int, default=512, help="Max new tokens")
-    parser.add_argument("--fp16", action="store_true", help="Enable half-precision floating point (16-bit)")
-    parser.add_argument("--bf16", action="store_true", help="Enable bfloat16 precision floating point (16-bit)")
     parser.add_argument("--batch_size", type=int, default=1, help="Batch size for processing")
     parser.add_argument("--num_workers", type=int, default=4, help="Number of workers for data loading")
     parser.add_argument("--batch_number", type=int, default=1, help="Batch number to process")
@@ -74,10 +27,11 @@ def parse_args():
 
 def load_model(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    torch_dtype = torch.bfloat16 if args.bf16 else torch.float16
+    torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
     quantization_config = BitsAndBytesConfig(
         load_in_8bit=(args.quant == 8),
-        load_in_4bit=(args.quant == 4)
+        load_in_4bit=(args.quant == 4),
+        bnb_4bit_compute_dtype=torch.float16
     )
     model = AutoModelForCausalLM.from_pretrained(
         args.from_pretrained,
@@ -118,15 +72,9 @@ def main():
     args = parse_args()
     model, device = load_model(args)
     tokenizer = AutoTokenizer.from_pretrained(args.local_tokenizer, trust_remote_code=True)
-    tokenizer.padding_side = 'left'
-    tokenizer.pad_token_id = tokenizer.eos_token_id
 
-    prompt_template = '<img>{}</img><ref>{}</ref><box>'
     image_files = load_image_files(folder_path=args.folder_path, url_file=args.url_file)
-
-    prompts_dict = None
-    if args.prompts_file:
-        prompts_dict = load_prompts(args.prompts_file)
+    prompts_dict = load_prompts(args.prompts_file) if args.prompts_file else {}
 
     total_images = len(image_files)
     items_per_batch = math.ceil(total_images / args.total_batches)
@@ -134,54 +82,23 @@ def main():
     end_index = start_index + items_per_batch
     batched_files = dict(list(image_files.items())[start_index:end_index])
 
-    dataset = ImageTextDataset(batched_files, tokenizer, prompt_template, prompts_dict, query=args.query)
-    dataloader = DataLoader(
-        dataset=dataset,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
-        pin_memory=True,
-        collate_fn=lambda x: x,
-    )
-
     outputs = []
-    for batch in tqdm(dataloader):
-        for item in batch:
-            input_ids, attention_mask, image_tensor, filename, prompt_text = item
-            input_ids, attention_mask, image_tensor = input_ids.to(device), attention_mask.to(device), image_tensor.to(device)
-            print(f"Prompt: {prompt_text}")
+    for filename, path in tqdm(batched_files.items()):
+        prompts = prompts_dict.get(filename, [args.query])
+        for prompt_text in prompts:
+            query = [{'image': path}, {'text': prompt_text}]
+            inputs = tokenizer.from_list_format(query)
+            inputs = tokenizer(inputs, return_tensors='pt').to(device)
+            pred = model.generate(**inputs, max_new_tokens=args.max_new_tokens)
+            response = tokenizer.decode(pred.cpu()[0], skip_special_tokens=True)
             print(f"Image: {filename}")
-            inputs = {
-                'input_ids': input_ids.unsqueeze(0),
-                'attention_mask': attention_mask.unsqueeze(0),
-                'images': image_tensor.unsqueeze(0) 
-            }
-
-            pred = model.generate(
-                **inputs,
-                do_sample=False,
-                num_beams=1,
-                max_new_tokens=args.max_new_tokens,
-                length_penalty=1,
-                num_return_sequences=1,
-                use_cache=True,
-                pad_token_id=tokenizer.pad_token_id,
-                eos_token_id=tokenizer.eos_token_id,
-            )
-
-            answers = [
-                tokenizer.decode(output[inputs['input_ids'].size(1):], skip_special_tokens=True)
-                for output in pred
-            ]
-
-            for answer in answers:
-                print(f"Image: {filename}")
-                print(f"Prompt: {prompt_text}")
-                print(f"Answer: {answer}")
-                outputs.append({
-                    "file": filename,
-                    "prompt": prompt_text,
-                    "text": answer,
-                })
+            print(f"Prompt: {prompt_text}")
+            print(f"Response: {response}")
+            outputs.append({
+                "file": filename,
+                "prompt": prompt_text,
+                "text": response,
+            })
 
     with open(f"outputs_batch_{args.batch_number}.jsonl", 'w') as ans_file:
         for output in outputs:

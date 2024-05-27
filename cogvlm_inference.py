@@ -31,7 +31,8 @@ def load_model(args):
     torch_dtype = torch.bfloat16 if args.bf16 else torch.float16
     quantization_config = BitsAndBytesConfig(
         load_in_8bit=(args.quant == 8),
-        load_in_4bit=(args.quant == 4)
+        load_in_4bit=(args.quant == 4),
+        bnb_4bit_compute_dtype=torch.float16
     )
     model = AutoModelForCausalLM.from_pretrained(
         args.from_pretrained,
