@@ -32,6 +32,14 @@ class ImageTextDataset(Dataset):
 
     def __len__(self):
         return len(self.data)
+    def preprocess_image(self, image):
+        mean, std = [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]
+        preprocess_transform = transforms.Compose([
+            transforms.Resize((448, 448)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=mean, std=std)
+        ])
+        return preprocess_transform(image).unsqueeze(0)
 
     def __getitem__(self, idx):
         filename, path, prompt_text = self.data[idx]
@@ -40,11 +48,11 @@ class ImageTextDataset(Dataset):
             image = Image.open(BytesIO(response.content)).convert("RGB")
         else:
             image = Image.open(path).convert("RGB")
-        #image_tensor = self.preprocess_image(image)
+        image_tensor = self.preprocess_image(image)
         input_text = self.prompt_template.format("", prompt_text)
         input_ids = self.tokenizer(input_text, return_tensors="pt").input_ids.squeeze()
         attention_mask = self.tokenizer(input_text, return_tensors="pt").attention_mask.squeeze()
-        return input_ids, attention_mask, image, filename, prompt_text
+        return input_ids, attention_mask, image_tensor, filename, prompt_text
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Process images for captioning using pre-trained models.")
@@ -139,12 +147,13 @@ def main():
     for batch in tqdm(dataloader):
         for item in batch:
             input_ids, attention_mask, image_tensor, filename, prompt_text = item
-            input_ids, attention_mask, image_tensor = input_ids.to(device), attention_mask.to(device), image_tensor
+            input_ids, attention_mask, image_tensor = input_ids.to(device), attention_mask.to(device), image_tensor.to(device)
             print(f"Prompt: {prompt_text}")
             print(f"Image: {filename}")
             inputs = {
                 'input_ids': input_ids.unsqueeze(0),
-                'attention_mask': attention_mask.unsqueeze(0)
+                'attention_mask': attention_mask.unsqueeze(0),
+                'images': image_tensor.unsqueeze(0) 
             }
 
             pred = model.generate(
