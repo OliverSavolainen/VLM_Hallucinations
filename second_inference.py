@@ -62,7 +62,7 @@ def parse_args():
     parser.add_argument("--prompts_file", type=str, help="Path to a JSONL file containing prompts for each image.")
     parser.add_argument("--from_pretrained", type=str, default="Qwen/Qwen-VL", help="Pretrained model identifier or path")
     parser.add_argument("--local_tokenizer", type=str, default="Qwen/Qwen-VL", help="Tokenizer identifier or path")
-    parser.add_argument("--quant", type=int, default=8, help="Quantization bits")
+    parser.add_argument("--quant", type=int, default=4, help="Quantization bits")
     parser.add_argument("--query", type=str, default="Describe the image accurately and in detail.", help="Default query for captioning")
     parser.add_argument("--max_new_tokens", type=int, default=512, help="Max new tokens")
     parser.add_argument("--batch_size", type=int, default=1, help="Batch size for processing")
@@ -84,7 +84,7 @@ def load_model(args):
         low_cpu_mem_usage=True,
         quantization_config=quantization_config,
         trust_remote_code=True,
-    ).to(device).eval()
+    ).eval()
     return model, device
 
 def load_image_files(folder_path=None, url_file=None):
