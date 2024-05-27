@@ -80,13 +80,13 @@ def main():
     image_files = load_images(args)
     
     for filename, path in image_files.items():
-        if args.url_file:
+        if path.startswith('http'):
             response = requests.get(path)
             image = Image.open(BytesIO(response.content)).convert("RGB")
         else:
             image = Image.open(path).convert("RGB")
         
-        image_tensor = preprocess_image(path).to(device)
+        image_tensor = preprocess_image(image).to(device)
         
         inputs = tokenizer(args.query, return_tensors="pt").to(device)
         inputs['pixel_values'] = image_tensor
