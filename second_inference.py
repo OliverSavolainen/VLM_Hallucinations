@@ -42,15 +42,13 @@ def load_model(args):
     ).eval()
     return model, device
 
-def preprocess_image(image_path):
+def preprocess_image(image):
     mean, std = [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]
     preprocess_transform = transforms.Compose([
-        lambda img: img.convert("RGB"),
         transforms.Resize((448, 448)),
         transforms.ToTensor(),
         transforms.Normalize(mean=mean, std=std)
     ])
-    image = Image.open(image_path)
     return preprocess_transform(image).unsqueeze(0)
 
 def load_images(args):
@@ -71,22 +69,24 @@ def load_images(args):
     end_index = start_index + items_per_batch
     batched_files = dict(list(image_files.items())[start_index:end_index])
     
-    return batched_files
-
-def main():
-    args = parse_args()
-    model, device = load_model(args)
-    tokenizer = AutoTokenizer.from_pretrained(args.local_tokenizer,trust_remote_code=True)
-    image_files = load_images(args)
-    
-    for filename, path in image_files.items():
+    images = {}
+    for filename, path in batched_files.items():
         if path.startswith('http'):
             response = requests.get(path)
             image = Image.open(BytesIO(response.content)).convert("RGB")
         else:
             image = Image.open(path).convert("RGB")
-        
-        image_tensor = preprocess_image(image).to(device)
+        images[filename] = preprocess_image(image)
+    return images
+
+def main():
+    args = parse_args()
+    model, device = load_model(args)
+    tokenizer = AutoTokenizer.from_pretrained(args.local_tokenizer,trust_remote_code=True)
+    images = load_images(args)
+    
+    for filename, image_tensor in images.items():
+        image_tensor = image_tensor.to(device)
         
         inputs = tokenizer(args.query, return_tensors="pt").to(device)
         inputs['pixel_values'] = image_tensor
