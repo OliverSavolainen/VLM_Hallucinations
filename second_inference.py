@@ -137,7 +137,7 @@ def main():
     for batch in tqdm(dataloader):
         for item in batch:
             input_ids, attention_mask, image_tensor, filename, prompt_text = item
-            input_ids, attention_mask, image_tensor = input_ids, attention_mask, image_tensor
+            input_ids, attention_mask, image_tensor = input_ids.to(device), attention_mask.to(device), image_tensor
             print(f"Prompt: {prompt_text}")
             print(f"Image: {filename}")
             inputs = {
