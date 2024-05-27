@@ -1,7 +1,7 @@
 import argparse
 import torch
 from PIL import Image
-from transformers import AutoModelForVision2Seq, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from torchvision import transforms
 import os
 import json
@@ -16,6 +16,7 @@ def parse_args():
     parser.add_argument("--prompts_file", type=str, help="Optional path to a JSONL file containing prompts for each image.")
     parser.add_argument("--from_pretrained", type=str, default="Qwen/Qwen-VL", help="Pretrained model identifier or path")
     parser.add_argument("--local_tokenizer", type=str, default="Qwen/Qwen-VL", help="Tokenizer identifier or path")
+    parser.add_argument("--quant", type=int, default=8, help="Quantization bits")
     parser.add_argument("--query", type=str, default="Describe the image accurately and in detail.", help="Default query for captioning")
     parser.add_argument("--max_new_tokens", type=int, default=512, help="Max new tokens")
     parser.add_argument("--batch_number", type=int, default=1, help="Batch number to process")
@@ -25,12 +26,30 @@ def parse_args():
 
 def load_model(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = AutoModelForVision2Seq.from_pretrained(
+    torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    quantization_config = BitsAndBytesConfig(
+        load_in_8bit=(args.quant == 8),
+        load_in_4bit=(args.quant == 4)
+    )
+    model = AutoModelForCausalLM.from_pretrained(
         args.from_pretrained,
+        torch_dtype=torch_dtype,
         low_cpu_mem_usage=True,
+        quantization_config=quantization_config,
         trust_remote_code=True,
-    ).eval().to(device)
+    ).eval()
     return model, device
+
+def preprocess_image(image_path):
+    mean, std = [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]
+    preprocess_transform = transforms.Compose([
+        lambda img: img.convert("RGB"),
+        transforms.Resize((448, 448)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=std)
+    ])
+    image = Image.open(image_path)
+    return preprocess_transform(image).unsqueeze(0)
 
 def load_images(args):
     if args.folder_path:
@@ -65,11 +84,13 @@ def main():
         else:
             image = Image.open(path).convert("RGB")
         
+        image_tensor = preprocess_image(path).to(device)
+        
         inputs = tokenizer(args.query, return_tensors="pt").to(device)
-        inputs['pixel_values'] = transforms.ToTensor()(image).unsqueeze(0).to(device)
+        inputs['pixel_values'] = image_tensor
 
         with torch.no_grad():
-            outputs = model.generate(**inputs)
+            outputs = model.generate(**inputs, max_new_tokens=args.max_new_tokens)
             response = tokenizer.decode(outputs[0], skip_special_tokens=True)
             print(f"Image: {filename}")
             print(response)
