@@ -40,6 +40,7 @@ class ImageTextDataset(Dataset):
         else:
             image = Image.open(path).convert("RGB")
         image_tensor = self.preprocess_image(image)
+
         input_text = self.prompt_template.format("", prompt_text)
         input_ids = self.tokenizer(input_text, return_tensors="pt").input_ids.squeeze()
         attention_mask = self.tokenizer(input_text, return_tensors="pt").attention_mask.squeeze()
@@ -53,6 +54,14 @@ class ImageTextDataset(Dataset):
             transforms.Normalize(mean=mean, std=std)
         ])
         return preprocess_transform(image).unsqueeze(0)
+
+def collate_fn(batch):
+    input_ids = torch.nn.utils.rnn.pad_sequence([item[0] for item in batch], batch_first=True)
+    attention_masks = torch.nn.utils.rnn.pad_sequence([item[1] for item in batch], batch_first=True)
+    image_tensors = torch.stack([item[2] for item in batch])
+    filenames = [item[3] for item in batch]
+    prompt_texts = [item[4] for item in batch]
+    return input_ids, attention_masks, image_tensors, filenames, prompt_texts
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Process images for captioning using pre-trained models.")
@@ -130,46 +139,41 @@ def main():
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         pin_memory=True,
-        collate_fn=lambda x: x,
+        collate_fn=collate_fn,
     )
 
     outputs = []
     for batch in tqdm(dataloader):
-        for item in batch:
-            input_ids, attention_mask, image_tensor, filename, prompt_text = item
-            input_ids, attention_mask, image_tensor = input_ids.to(device), attention_mask.to(device), image_tensor.to(device)
+        input_ids, attention_masks, image_tensors, filenames, prompt_texts = batch
+        input_ids, attention_masks, image_tensors = input_ids.to(device), attention_masks.to(device), image_tensors.to(device)
 
-            inputs = {
-                'input_ids': input_ids.unsqueeze(0),
-                'attention_mask': attention_mask.unsqueeze(0)
-            }
+        inputs = {
+            'input_ids': input_ids,
+            'attention_mask': attention_masks
+        }
 
-            pred = model.generate(
-                **inputs,
-                do_sample=False,
-                num_beams=1,
-                max_new_tokens=args.max_new_tokens,
-                length_penalty=1,
-                num_return_sequences=1,
-                use_cache=True,
-                pad_token_id=tokenizer.pad_token_id,
-                eos_token_id=tokenizer.eos_token_id,
-            )
+        preds = model.generate(
+            **inputs,
+            do_sample=False,
+            num_beams=1,
+            max_new_tokens=args.max_new_tokens,
+            length_penalty=1,
+            num_return_sequences=1,
+            use_cache=True,
+            pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+        )
 
-            answers = [
-                tokenizer.decode(output[inputs['input_ids'].size(1):], skip_special_tokens=True)
-                for output in pred
-            ]
-
-            for answer in answers:
-                print(f"Image: {filename}")
-                print(f"Prompt: {prompt_text}")
-                print(f"Answer: {answer}")
-                outputs.append({
-                    "file": filename,
-                    "prompt": prompt_text,
-                    "text": answer,
-                })
+        for i, pred in enumerate(preds):
+            answer = tokenizer.decode(pred[input_ids.size(1):], skip_special_tokens=True)
+            print(f"Image: {filenames[i]}")
+            print(f"Prompt: {prompt_texts[i]}")
+            print(f"Answer: {answer}")
+            outputs.append({
+                "file": filenames[i],
+                "prompt": prompt_texts[i],
+                "text": answer,
+            })
 
     with open("outputs.jsonl", 'w') as ans_file:
         for output in outputs:
