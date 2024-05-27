@@ -17,16 +17,13 @@ def extract_objects(input_file_path, output_file_path):
         for line in file:
             try:
                 json_line = json.loads(line)
-                question_id = json_line.get("question_id", "")
-
-                if question_id == "":
-                    question_id = json_line.get("file", "")
+                file_name = json_line.get("file", "")
 
                 text = json_line.get("text", "")
                 objects = extract_objects_with_bounding_boxes(text)
                 for obj, bbox in objects:
                     processed_objects.append({
-                        "question_id": question_id,
+                        "question_id": file_name,
                         "object_name": obj.capitalize(),
                         "bounding_box": bbox
                     })

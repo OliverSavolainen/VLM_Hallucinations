@@ -46,6 +46,7 @@ def match_bboxes(labels_path='data/bbox_pope_images/labels.json',
         img_size = image_sizes[image_id]
         # Get extracted bbox and scale it img_size
         scaled_bbox = scale_bbox(object["bounding_box"], img_size)
+        object["bounding_box"] = scaled_bbox
         # Object class
         object_class = object["object_name"]
         # Get ground truth bounding boxes
