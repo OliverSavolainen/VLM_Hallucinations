@@ -76,7 +76,7 @@ def load_images(args):
 def main():
     args = parse_args()
     model, device = load_model(args)
-    tokenizer = AutoTokenizer.from_pretrained(args.local_tokenizer)
+    tokenizer = AutoTokenizer.from_pretrained(args.local_tokenizer,trust_remote_code=True)
     image_files = load_images(args)
     
     for filename, path in image_files.items():
