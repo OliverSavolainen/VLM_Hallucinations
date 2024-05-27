@@ -56,6 +56,8 @@ def parse_args():
     parser.add_argument("--quant", type=int, default=4, help="Quantization bits")
     parser.add_argument("--query", type=str, default="Describe the image accurately and in detail.", help="Default query for captioning")
     parser.add_argument("--max_new_tokens", type=int, default=512, help="Max new tokens")
+    parser.add_argument("--fp16", action="store_true", help="Enable half-precision floating point (16-bit)")
+    parser.add_argument("--bf16", action="store_true", help="Enable bfloat16 precision floating point (16-bit)")
     parser.add_argument("--batch_size", type=int, default=1, help="Batch size for processing")
     parser.add_argument("--num_workers", type=int, default=4, help="Number of workers for data loading")
     parser.add_argument("--batch_number", type=int, default=1, help="Batch number to process")
@@ -64,7 +66,7 @@ def parse_args():
 
 def load_model(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    torch_dtype = torch.bfloat16 if args.bf16 else torch.float16
     quantization_config = BitsAndBytesConfig(
         load_in_8bit=(args.quant == 8),
         load_in_4bit=(args.quant == 4)
