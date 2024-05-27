@@ -2,6 +2,7 @@ import argparse
 import torch
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from torchvision import transforms
 import os
 import json
 import requests
@@ -80,7 +81,7 @@ def main():
     model, device = load_model(args)
     tokenizer = AutoTokenizer.from_pretrained(args.local_tokenizer, trust_remote_code=True)
 
-    image_files = load_image_files(folder_path=args.folder_path, url_file=args.url_file)
+    image_files = load_image_files(folder_path=None, url_file=args.url_file)
     prompts_dict = load_prompts(args.prompts_file) if args.prompts_file else {}
 
     total_images = len(image_files)
