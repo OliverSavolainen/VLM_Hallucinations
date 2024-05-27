@@ -26,7 +26,7 @@ def parse_args():
 
 def load_model(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    torch_dtype = torch.bfloat16 if args.bf16 else torch.float16
     quantization_config = BitsAndBytesConfig(
         load_in_8bit=(args.quant == 8),
         load_in_4bit=(args.quant == 4)
