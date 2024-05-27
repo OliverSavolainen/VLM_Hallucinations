@@ -18,6 +18,8 @@ def parse_args():
     parser.add_argument("--local_tokenizer", type=str, default="Qwen/Qwen-VL", help="Tokenizer identifier or path")
     parser.add_argument("--quant", type=int, default=8, help="Quantization bits")
     parser.add_argument("--query", type=str, default="Describe the image accurately and in detail.", help="Default query for captioning")
+    parser.add_argument("--fp16", action="store_true", help="Enable half-precision floating point (16-bit)")
+    parser.add_argument("--bf16", action="store_true", help="Enable bfloat16 precision floating point (16-bit)")
     parser.add_argument("--max_new_tokens", type=int, default=512, help="Max new tokens")
     parser.add_argument("--batch_number", type=int, default=1, help="Batch number to process")
     parser.add_argument("--total_batches", type=int, default=4, help="Total number of batches")
