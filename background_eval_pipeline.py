@@ -16,7 +16,7 @@ parser.add_argument("--output_file", type=str, default="pipeline_outputs/backgro
 parser.add_argument("--bbox_output_file",type=str,default='intermediate_outputs/pope_objects_with_bboxes.jsonl',help="Path to JSONL file for extracted objects and their bounding boxes.")
 parser.add_argument("--hallucination_threshold", type=float, default=0.25,help="Ratio of background pixels in bbox to classify as hallucination. Float between 0.0 and 1.0.")
 
-
+parser.add_argument("--pope_answer_file", type=str,default=None, help="POPE answer file, value for this determines if answers from POPE are considered when evaluating.")
 parser.add_argument("--sentence_transformer", type=str, default="all-MiniLM-L6-v2",help="Pretrained sentence transformer model to be used for matching extracted objects to target object classes.")
 args = parser.parse_args()
 
@@ -24,5 +24,9 @@ args = parser.parse_args()
 pope_object_extraction.extract_objects(args.input_file, args.bbox_output_file)
 
 # Check if bbox corresponds to background or foreground
-background_bbox_matching.match_bbox_with_background(extracted_objects_path=args.bbox_output_file,segmentations_path=args.segmentation_masks,output_path=args.output_file, hallucination_threshold=args.hallucination_threshold)
+background_bbox_matching.match_bbox_with_background(extracted_objects_path=args.bbox_output_file,
+                            segmentations_path=args.segmentation_masks,output_path=args.output_file,
+                            hallucination_threshold=args.hallucination_threshold,
+                               label_file_path=args.pope_answer_file,
+                               consider_pope_labels=args.pope_answer_file is not None)
 
