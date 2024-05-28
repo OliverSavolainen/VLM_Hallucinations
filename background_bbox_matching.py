@@ -35,7 +35,7 @@ def match_bbox_with_background(extracted_objects_path='intermediate_outputs/obje
         if bbox == "":
             if consider_pope_labels:
                 obj['is_hallucination'] = False
-                obj['is_misclassification'] = not label
+                obj['is_misclassification'] = label
                 valid_objects.append(obj)
             continue
 
