@@ -4,18 +4,23 @@ import argparse
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="Grounded VLM Hallucination Complete Evaluation")
 # Input answer file
-parser.add_argument("--input_file", type=str, default="pipeline_outputs/background_hallucinations_ade20k_0.75.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
+parser.add_argument("--input_file", type=str, default="model_outputs/prompts_cogvlm_outputs.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
+# Input the pipeline output
+parser.add_argument("--pipeline_output_file", type=str, default="pipeline_outputs/background_hallucinations_ade20k_0.75.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
 # Final output file
 parser.add_argument("--output_file", type=str, default="results/background_results.jsonl", help="Path to results JSONL file.")
 args = parser.parse_args()
 
 ans_file = args.input_file
+pipeline_output_file = args.pipeline_output_file
 output_file = args.output_file
 
 answers = [json.loads(q) for q in open(ans_file, 'r')]
 
+pipeline_out =[json.loads(q) for q in open(pipeline_output_file, 'r')]
+
 # Count the number of hallucinations and total objects
-hallucination_count = sum(1 for answer in answers if answer['is_hallucination'])
+hallucination_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'])
 total_objects = len(answers)
 
 # Calculate accuracy

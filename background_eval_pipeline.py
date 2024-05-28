@@ -7,7 +7,7 @@ from sentence_transformers import SentenceTransformer, util
 # Set up command line argument parsing
 parser = argparse.ArgumentParser(description="Grounded VLM Hallucination Evaluation with foreground background matching pipeline")
 ##TODO change it to POPE answer files
-parser.add_argument("--input_file", type=str, default="prompts_cogvlm_outputs.jsonl", help="Path to the JSONL file containing answers to POPE.")
+parser.add_argument("--input_file", type=str, default="model_outputs/prompts_cogvlm_outputs.jsonl", help="Path to the JSONL file containing answers to POPE.")
 parser.add_argument("--segmentation_masks", type=str, default="data/segmentation_masks/segmentation_masks_ade20k.h5",  help="Path to the h5 file containing segmentation masks.")
 
 
