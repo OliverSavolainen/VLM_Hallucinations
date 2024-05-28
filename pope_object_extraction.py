@@ -38,8 +38,6 @@ def extract_objects(input_file_path, output_file_path):
                     "object_name": "",
                     "bounding_box": ""
                     })
-                    print(text.strip())
-                    break
                 else:
                     object_name = extract_object_name(prompt)
 
