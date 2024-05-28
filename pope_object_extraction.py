@@ -50,6 +50,13 @@ def extract_objects(input_file_path, output_file_path):
                         "object_name": object_name.capitalize(),
                         "bounding_box": ""
                         })
+                else:
+                    processed_objects.append({
+                    "question_id": file_name,
+                    "prompt": prompt,
+                    "object_name": "",
+                    "bounding_box": ""
+                    })
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 continue
