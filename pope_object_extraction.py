@@ -9,7 +9,7 @@ def extract_objects_with_bounding_boxes(text):
 
 def extract_object_name(prompt):
     # Capture the object name from the prompt
-    pattern = r'Is there a (\w+) in the image\?'
+    pattern = r'Is there a ([\w\s]+) in the image\?'
     match = re.search(pattern, prompt)
     if match:
         return match.group(1)
@@ -32,41 +32,23 @@ def extract_objects(input_file_path, output_file_path):
                     
                 prompt = json_line.get("prompt", "")
                 object_name = extract_object_name(prompt)
-
-                if object_name:
-                    bounding_boxes = extract_objects_with_bounding_boxes(text)
-                    if bounding_boxes:
-                        for bbox in bounding_boxes:
-                            processed_objects.append({
-                                "question_id": file_name,
-                                "prompt": prompt,
-                                "object_name": object_name.capitalize(),
-                                "bounding_box": bbox
-                            })
-                    else:
+                bounding_boxes = extract_objects_with_bounding_boxes(text)
+                if bounding_boxes:
+                    for bbox in bounding_boxes:
                         processed_objects.append({
-                        "question_id": file_name,
-                        "prompt": prompt,
-                        "object_name": object_name.capitalize(),
-                        "bounding_box": ""
+                            "question_id": file_name,
+                            "prompt": prompt,
+                            "object_name": object_name.capitalize() if object_name else "",
+                            "bounding_box": bbox
                         })
                 else:
-                    bounding_boxes = extract_objects_with_bounding_boxes(text)
-                    if bounding_boxes:
-                        for bbox in bounding_boxes:
-                            processed_objects.append({
-                                "question_id": file_name,
-                                "prompt": prompt,
-                                "object_name": "",
-                                "bounding_box": bbox
-                            })
-                    else:
-                        processed_objects.append({
-                        "question_id": file_name,
-                        "prompt": prompt,
-                        "object_name": "",
-                        "bounding_box": ""
-                        })
+                    processed_objects.append({
+                    "question_id": file_name,
+                    "prompt": prompt,
+                    "object_name": object_name.capitalize() if object_name else "",
+                    "bounding_box": ""
+                    })
+
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 continue
