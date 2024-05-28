@@ -50,11 +50,12 @@ def match_bbox_with_background(extracted_objects_path='intermediate_outputs/obje
 
         obj['background_ratio'] = background_ratio
         is_hallucination = background_ratio > hallucination_threshold
-        obj['is_hallucination'] = bool(is_hallucination)  # Convert to native Python bool
+        obj['is_hallucination'] = bool(is_hallucination)
 
         if consider_pope_labels:
-            obj['is_hallucination'] = bool(not label if label is not None else is_hallucination)
-            obj['misclassification'] = bool(label is not None and not label and not is_hallucination)
+            if label is not None:
+                obj['is_hallucination'] = not label and is_hallucination
+                obj['misclassification'] = not label and not is_hallucination
 
         valid_objects.append(obj)
 
@@ -84,4 +85,7 @@ def load_labels(label_file_path):
     return labels
 
 def find_label_for_prompt(prompt, image_name, labels):
-    return labels.get((image_name, prompt))
+    for (img, q_prompt), label in labels.items():
+        if img == image_name and q_prompt in prompt:
+            return label
+    return None
