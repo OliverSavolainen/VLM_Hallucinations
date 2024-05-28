@@ -64,18 +64,15 @@ def eval_pope(answers, label_file):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--annotation-dir", type=str)
-    parser.add_argument("--question-file", type=str)
     parser.add_argument("--result-file", type=str)
     args = parser.parse_args()
 
-    questions = [json.loads(line) for line in open(args.question_file)]
-    questions = {question['question_id']: question for question in questions}
     answers = [json.loads(q) for q in open(args.result_file)]
     for file in os.listdir(args.annotation_dir):
         assert file.startswith('coco_pope_')
         assert file.endswith('.json')
         category = file[10:-5]
-        cur_answers = [x for x in answers if questions[x['question_id']]['category'] == category]
+        cur_answers = [x for x in answers if any(label['image'] == x['file'] and label['text'] in x['prompt'].strip() for label in json.load(open(os.path.join(args.annotation_dir, file))))]
         print('Category: {}, # samples: {}'.format(category, len(cur_answers)))
         eval_pope(cur_answers, os.path.join(args.annotation_dir, file))
         print("====================================")
