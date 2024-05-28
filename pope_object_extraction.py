@@ -29,18 +29,28 @@ def extract_objects(input_file_path, output_file_path):
                 file_name = json_line.get("file", "")
 
                 text = json_line.get("text", "")
+                    
                 prompt = json_line.get("prompt", "")
-                object_name = extract_object_name(prompt)
+                if "no" or "doesn't exist" in text.strip():
+                    processed_objects.append({
+                    "question_id": file_name,
+                    "prompt": prompt,
+                    "object_name": "",
+                    "bounding_box": ""
+                    })
+                else:
+                    object_name = extract_object_name(prompt)
 
-                if object_name:
-                    bounding_boxes = extract_objects_with_bounding_boxes(text)
-                    if bounding_boxes:  # Only process if bounding boxes are found
-                        for bbox in bounding_boxes:
-                            processed_objects.append({
-                                "question_id": file_name,
-                                "object_name": object_name.capitalize(),
-                                "bounding_box": bbox
-                            })
+                    if object_name:
+                        bounding_boxes = extract_objects_with_bounding_boxes(text)
+                        if bounding_boxes:  # Only process if bounding boxes are found
+                            for bbox in bounding_boxes:
+                                processed_objects.append({
+                                    "question_id": file_name,
+                                    "prompt": prompt,
+                                    "object_name": object_name.capitalize(),
+                                    "bounding_box": bbox
+                                })
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 continue
