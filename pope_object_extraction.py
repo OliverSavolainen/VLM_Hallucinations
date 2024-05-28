@@ -31,7 +31,7 @@ def extract_objects(input_file_path, output_file_path):
                 text = json_line.get("text", "")
                     
                 prompt = json_line.get("prompt", "")
-                if "no" in text.strip() or "doesn't exist" in text.strip():
+                if " no" in text.strip() or "doesn't exist" in text.strip():
                     processed_objects.append({
                     "question_id": file_name,
                     "prompt": prompt,
