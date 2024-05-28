@@ -92,7 +92,7 @@ def scale_bbox(bbox, new_scale):
     scaled_x0, scaled_x1 = (float_corners[0] * new_scale[0],
                             float_corners[2] * new_scale[0])
     scaled_y0, scaled_y1 = (float_corners[1] * new_scale[1],
-                            float_corners[3] * new_scale[0])
+                            float_corners[3] * new_scale[1])
     return scaled_x0, scaled_y0, scaled_x1, scaled_y1
 
 
