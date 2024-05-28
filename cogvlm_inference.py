@@ -116,9 +116,9 @@ def main():
     if args.prompts_file:
         prompts_dict = load_prompts(args.prompts_file, args.remove_second_line)
 
-    file_mode = 'a' if os.path.exists("cogvlm_outputs.jsonl") else 'w'
+    file_mode = 'a' if os.path.exists("prompts_cogvlm_outputs.jsonl") else 'w'
 
-    with open("cogvlm_outputs.jsonl", file_mode) as ans_file:
+    with open("prompts_cogvlm_outputs.jsonl", file_mode) as ans_file:
         for filename, image in images.items():
             queries = prompts_dict.get(filename, [args.query]) if args.prompts_file else [args.query]
             
