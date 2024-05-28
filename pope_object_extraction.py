@@ -51,12 +51,22 @@ def extract_objects(input_file_path, output_file_path):
                         "bounding_box": ""
                         })
                 else:
-                    processed_objects.append({
-                    "question_id": file_name,
-                    "prompt": prompt,
-                    "object_name": "",
-                    "bounding_box": ""
-                    })
+                    bounding_boxes = extract_objects_with_bounding_boxes(text)
+                    if bounding_boxes:
+                        for bbox in bounding_boxes:
+                            processed_objects.append({
+                                "question_id": file_name,
+                                "prompt": prompt,
+                                "object_name": "",
+                                "bounding_box": bbox
+                            })
+                    else:
+                        processed_objects.append({
+                        "question_id": file_name,
+                        "prompt": prompt,
+                        "object_name": "",
+                        "bounding_box": ""
+                        })
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 continue
