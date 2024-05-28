@@ -9,6 +9,7 @@ def eval_pope(answers, label_file):
         text = answer['text']
 
         text = text.replace(',', '')
+        text = text.replace('.', '')
         words = text.split(' ')
         if 'No' in words or 'not' in words or 'no' in words:
             answer['text'] = 'no'
