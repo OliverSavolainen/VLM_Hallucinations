@@ -21,15 +21,19 @@ pipeline_out =[json.loads(q) for q in open(pipeline_output_file, 'r')]
 
 # Count the number of hallucinations and total objects
 hallucination_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'])
+misclassification_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_misclassification'])
 total_objects = len(answers)
 
 # Calculate accuracy
 hallucination_rate = hallucination_count / total_objects if total_objects > 0 else 0
-accuracy = (total_objects - hallucination_count) / total_objects if total_objects > 0 else 0
+misclassification_rate = misclassification_count / total_objects if total_objects > 0 else 0
+accuracy = (total_objects - hallucination_count - misclassification_count) / total_objects if total_objects > 0 else 0
 
 print('Total objects: {}'.format(total_objects))
 print('Hallucinations: {}'.format(hallucination_count))
 print('Hallucination Rate: {}'.format(hallucination_rate))
+print('Misclassifications: {}'.format(misclassification_count))
+print('Misclassification Rate: {}'.format(misclassification_rate))
 print('Accuracy: {}'.format(accuracy))
 
 results = {
