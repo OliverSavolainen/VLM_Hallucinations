@@ -22,18 +22,23 @@ def match_bbox_with_background(extracted_objects_path='intermediate_outputs/obje
     if consider_pope_labels:
         labels = load_labels(label_file_path)
 
+    valid_objects = []
     for obj in extracted_objects:
         image_name = obj['question_id']
         bbox = obj["bounding_box"]
 
-        if consider_pope_labels and (label := find_label_for_prompt(obj["prompt"], image_name, labels)) is not None:
-            if bbox == "":
-                obj['is_hallucination'] = False
-                obj['misclassification'] = not label
+        if consider_pope_labels:
+            label = find_label_for_prompt(obj["prompt"], image_name, labels)
+            if label is None:
                 continue
 
         if bbox == "":
+            if consider_pope_labels:
+                obj['is_hallucination'] = False
+                obj['misclassification'] = not label
+                valid_objects.append(obj)
             continue
+
         # Scale bbox coords to coco image size (same as segmentation mask size) from 1000x1000
         segmentation_mask = segmentations[image_name]
         x0, y0, x1, y1 = scale_bbox(bbox, segmentation_mask.shape)
@@ -45,17 +50,19 @@ def match_bbox_with_background(extracted_objects_path='intermediate_outputs/obje
 
         obj['background_ratio'] = background_ratio
         is_hallucination = background_ratio > hallucination_threshold
-        obj['is_hallucination'] = is_hallucination
+        obj['is_hallucination'] = bool(is_hallucination)  # Convert to native Python bool
 
         if consider_pope_labels:
-            obj['is_hallucination'] = not label if label is not None else is_hallucination
-            obj['misclassification'] = label is not None and not label and not is_hallucination
+            obj['is_hallucination'] = bool(not label if label is not None else is_hallucination)
+            obj['misclassification'] = bool(label is not None and not label and not is_hallucination)
+
+        valid_objects.append(obj)
 
     segmentation_mask_type = segmentations_path.split('/')[-1].replace('.h5', '')
     output_path = output_path.replace('.jsonl', "_" + segmentation_mask_type + "_" + str(hallucination_threshold) + ".jsonl")
 
     with open(output_path, 'w') as file:
-        _ = [file.write(json.dumps(obj) + "\n") for obj in extracted_objects]
+        _ = [file.write(json.dumps(obj) + "\n") for obj in valid_objects]
 
 def scale_bbox(bbox, new_scale):
     corners = bbox.split(",")
