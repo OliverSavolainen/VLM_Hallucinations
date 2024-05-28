@@ -74,7 +74,7 @@ if __name__ == "__main__":
         assert file.endswith('.json')
         category = file[10:-5]
         labels = load_labels(os.path.join(args.annotation_dir, file))
-        cur_answers = [x for x in answers if any(label['image'] == x['file'] and label['text'] == x['prompt'].strip() for label in labels)]
+        cur_answers = [x for x in answers if any(label['image'] == x['file'] and label['text'] in x['prompt'].strip() for label in labels)]
         print('Category: {}, # samples: {}'.format(category, len(cur_answers)))
         eval_pope(cur_answers, os.path.join(args.annotation_dir, file))
         print("====================================")
