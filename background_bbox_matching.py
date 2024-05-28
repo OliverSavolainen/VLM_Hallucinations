@@ -39,7 +39,7 @@ def match_bbox_with_background(extracted_objects_path='intermediate_outputs/obje
                 valid_objects.append(obj)
             continue
 
-        # Scale bbox coords to coco image size (same as segmentation mask size) from 1000x1000
+        # Scale bbox coords to segmentation mask size from 1000x1000
         segmentation_mask = segmentations[image_name]
         x0, y0, x1, y1 = scale_bbox(bbox, segmentation_mask.shape)
         # Get the segmentation mask corresponding to the bbox
@@ -53,9 +53,8 @@ def match_bbox_with_background(extracted_objects_path='intermediate_outputs/obje
         obj['is_hallucination'] = bool(is_hallucination)
 
         if consider_pope_labels:
-            if label is not None:
-                obj['is_hallucination'] = bool(not label and is_hallucination)
-                obj['is_misclassification'] = bool(not label and not is_hallucination)
+            obj['is_hallucination'] = bool(is_hallucination and not label)
+            obj['is_misclassification'] = bool(not is_hallucination and not label)
 
         valid_objects.append(obj)
 
