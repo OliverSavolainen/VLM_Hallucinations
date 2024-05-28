@@ -8,10 +8,6 @@ def eval_pope(answers, label_file):
     for answer in answers:
         text = answer['text']
 
-        # Only keep the first sentence
-        if text.find('.') != -1:
-            text = text.split('.')[0]
-
         text = text.replace(',', '')
         words = text.split(' ')
         if 'No' in words or 'not' in words or 'no' in words:
@@ -68,11 +64,17 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     answers = [json.loads(q) for q in open(args.result_file)]
+
+    def load_labels(file_path):
+        with open(file_path, 'r') as f:
+            return [json.loads(line) for line in f]
+
     for file in os.listdir(args.annotation_dir):
         assert file.startswith('coco_pope_')
         assert file.endswith('.json')
         category = file[10:-5]
-        cur_answers = [x for x in answers if any(label['image'] == x['file'] and label['text'] in x['prompt'].strip() for label in json.load(open(os.path.join(args.annotation_dir, file))))]
+        labels = load_labels(os.path.join(args.annotation_dir, file))
+        cur_answers = [x for x in answers if any(label['image'] == x['file'] and label['text'] == x['prompt'].strip() for label in labels)]
         print('Category: {}, # samples: {}'.format(category, len(cur_answers)))
         eval_pope(cur_answers, os.path.join(args.annotation_dir, file))
         print("====================================")
