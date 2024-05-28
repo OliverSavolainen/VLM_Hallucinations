@@ -23,7 +23,7 @@ def match_bbox_with_background(extracted_objects_path='intermediate_outputs/obje
         labels = load_labels(label_file_path)
 
     for obj in extracted_objects:
-        image_name = obj['file']
+        image_name = obj['question_id']
         bbox = obj["bounding_box"]
 
         if consider_pope_labels and (label := find_label_for_prompt(obj["prompt"], image_name, labels)) is not None:
