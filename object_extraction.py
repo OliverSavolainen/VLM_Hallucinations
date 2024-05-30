@@ -20,6 +20,7 @@ def extract_objects(input_file_path, output_file_path):
                 file_name = json_line.get("file", "")
 
                 text = json_line.get("text", "")
+                
                 objects = extract_objects_with_bounding_boxes(text)
                 for obj, bbox in objects:
                     processed_objects.append({
