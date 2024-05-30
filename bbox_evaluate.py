@@ -2,7 +2,7 @@ import json
 import argparse
 
 parser = argparse.ArgumentParser(description="Grounded VLM Hallucination and Misclassification Evaluation")
-parser.add_argument("--input_file", type=str, default="pipeline_outputs/bbox_hallucinations_hth_0.5_mth_0.5.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
+parser.add_argument("--input_file", type=str, default="pipeline_outputs/bbox_hallucinations_hth_0.5_mth_0.3.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
 parser.add_argument("--output_file", type=str, default="results/bbox_results.jsonl", help="Path to results JSONL file.")
 args = parser.parse_args()
 
