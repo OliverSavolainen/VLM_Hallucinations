@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser(description="Grounded VLM Hallucination Complet
 # Input answer file
 parser.add_argument("--input_file", type=str, default="model_outputs/prompts_cogvlm_outputs.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
 # Input the pipeline output
-parser.add_argument("--pipeline_output_file", type=str, default="pipeline_outputs/background_hallucinations_ade20k_0.25.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
+parser.add_argument("--pipeline_output_file", type=str, default="pipeline_outputs/background_hallucinations_ade20k_0.75.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
 # Final output file
 parser.add_argument("--output_file", type=str, default="results/background_results.jsonl", help="Path to results JSONL file.")
 args = parser.parse_args()

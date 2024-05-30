@@ -12,16 +12,19 @@ output_file = args.output_file
 answers = [json.loads(q) for q in open(ans_file, 'r')]
 
 # Count the number of hallucinations, misclassifications, and total objects
-hallucination_count = sum(1 for answer in answers if answer['is_hallucination'] and not answer['is_misclassification'])
+hallucination_count = sum(1 for answer in answers if answer['is_hallucination'])
 misclassification_count = sum(1 for answer in answers if answer['is_misclassification'])
-#both_count = sum(1 for answer in answers if 'is_hallucination' in answer and answer['is_misclassification'])
+correct_count = sum(1 for answer in answers if not answer['is_hallucination'] and not answer['is_misclassification'])
 total_objects = len(answers)
 
 # Calculate rates for hallucinations and misclassifications
 hallucination_rate = hallucination_count / total_objects if total_objects > 0 else 0
 misclassification_rate = misclassification_count  / total_objects if total_objects > 0 else 0
+correct_rate = correct_count  / total_objects if total_objects > 0 else 0
+
 accuracy_hallucination = (total_objects - hallucination_count) / total_objects if total_objects > 0 else 0
-accuracy_misclassification = (total_objects - misclassification_count) / total_objects if total_objects > 0 else 0
+#accuracy_misclassification = (total_objects - misclassification_count -hallucination_count) / total_objects if total_objects > 0 else 0
+accuracy_misclassification = correct_rate
 
 print('Total objects: {}'.format(total_objects))
 print('Hallucinations: {}'.format(hallucination_count))

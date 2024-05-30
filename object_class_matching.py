@@ -52,15 +52,27 @@ def match_object_classes(jsonl_file, output_file, model, threshold):
 
     with jsonlines.open(jsonl_file) as reader, jsonlines.open(output_file, mode='w') as writer:
         for obj in reader:
+            if obj["is_hallucination"]:
+                obj["is_misclassification"] = False
+                writer.write(obj)
+                continue
+
             object_name = obj['object_name']
             object_embedding = model.encode(object_name, convert_to_tensor=True)
             matched_class = obj['bbox_match_object']
             gt_object_embedding = model.encode(matched_class, convert_to_tensor=True)
             cosine_score = util.cos_sim(object_embedding, gt_object_embedding)
+            obj["cosine_similarity"] = cosine_score.tolist()
 
-            if cosine_score < threshold:
+            # above 0.9 match -> correct classification
+            if cosine_score > 0.9:
+                obj["is_misclassification"] = False
+            # below 0.9 but above threshold -> misclassification
+            elif cosine_score > threshold:
                 obj['is_misclassification'] = True
+            # below threshold -> hallucination
             else:
+                obj["is_hallucination"] = True
                 obj['is_misclassification'] = False
 
             # Print and write the output with the matched class
