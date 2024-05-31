@@ -11,6 +11,16 @@ parser = argparse.ArgumentParser(description="Grounded VLM Hallucination Evaluat
 parser.add_argument("--input_file", type=str, default="captioning_outputs_cogvlm.jsonl", help="Path to the JSONL file containing generated captions by the VLM.")
 # Ground truth labels
 parser.add_argument("--labels", type=str, default="data/bbox_pope_images/labels.json",  help="Path to the JSONL file containing grountruth bounding boxes.")
+# Model bbox scale
+parser.add_argument("--model_bbox_scale", type=float, default=1000.0,  help="Coordinate range of the grounded model bounding boxes in (max_width, max_height) format as tuple of floats. "
+                                                                                     "1000.0 for CogVLM, 1.0 for Shikra.")
+# Model name
+parser.add_argument("--model_name", type=str, default="cog_vlm",  help="Name of the grounded model.")
+
+# Bounding box regex
+parser.add_argument("--bbox_regex", type=str, default="\[\[(\d{3},\d{3},\d{3},\d{3})\]\]",  help="Regex of bounding box depending on the grounded model bbox format. Cogvlm = \[\[(\d{3},\d{3},\d{3},\d{3})\]\] "
+                                                                                                 ", shikra = \[(\d+\.\d+(?:,\d+\.\d+){3}(?:;\d+\.\d+(?:,\d+\.\d+){3})*)\]  ")
+
 # Final output file
 parser.add_argument("--output_file", type=str, default="pipeline_outputs/bbox_hallucinations.jsonl",help="Path to results JSONL file.")
 # Intermediate outputs
@@ -18,7 +28,7 @@ parser.add_argument("--extracted_objects_file",type=str,default='intermediate_ou
 parser.add_argument("--iou_matched_objects_file",type=str,default='intermediate_outputs/bbox_iou_matched.jsonl',help="Path to JSONL file for generated objects matched with gt bounding boxes.")
 # Thresholds
 parser.add_argument("--hallucination_threshold", type=float, default=0.5,help="Threshold for minimum bounding box iou to not classify as hallucination. Float between 0.0 and 1.0.")
-parser.add_argument("--misclassification_threshold", type=float, default=0.5,help="Threshold for cosine similarity between generated and best match bounding box object. "
+parser.add_argument("--misclassification_threshold", type=float, default=0.3,help="Threshold for cosine similarity between generated and best match bounding box object. "
                                                                                   "Cosine similarity less than the threshold is considered misclassification. Float between 0.0 and 1.0.")
 # Pretrained sentence transformer
 parser.add_argument("--sentence_transformer", type=str, default="all-MiniLM-L6-v2",help="Pretrained sentence transformer model to be used for matching extracted objects to target object classes.")
@@ -29,18 +39,20 @@ parser.add_argument("--matched_objects_output_file", type=str, default="intermed
 
 # Extract object and bounding boxes
 object_extraction.extract_objects(input_file_path=args.input_file,
-                                  output_file_path=args.extracted_objects_file)
+                                  output_file_path=args.extracted_objects_file,
+                                  bbox_regex=args.bbox_regex)
 
 # Match bboxes
 bbox_iou.match_bboxes(labels_path=args.labels,
                       extracted_objects_path=args.extracted_objects_file,
                       output_path=args.iou_matched_objects_file,
-                      hallucination_threshold=args.hallucination_threshold)
+                      hallucination_threshold=args.hallucination_threshold,
+                      model_bbox_scale=args.model_bbox_scale)
 
 # Initialize the sentence transformer model
 model = SentenceTransformer(args.sentence_transformer)
 
-output_file_path = args.output_file.replace('.jsonl',"_hth_" + str(args.hallucination_threshold) + "_mth_" + str(args.misclassification_threshold) + ".jsonl")
+output_file_path = args.output_file.replace('.jsonl',"_hth_" + str(args.hallucination_threshold) + "_mth_" + str(args.misclassification_threshold) +"_" + args.model_name + ".jsonl")
 
 # Compare generated object names with best matched bbox object name to identify misclassifications
 object_class_matching.match_object_classes(jsonl_file=args.iou_matched_objects_file,

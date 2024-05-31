@@ -1,1 +1,1 @@
-{"Total objects": 1314, "Hallucinations": 833, "Misclassifications": 187, "Hallucination Rate": 0.6339421613394216, "Misclassification Rate": 0.14231354642313546, "Accuracy (Hallucination)": 0.3660578386605784, "Accuracy (Misclassification)": 0.2237442922374429}
+{"Total objects": 1314, "Hallucinations": 565, "Misclassifications": 455, "Hallucination Rate": 0.4299847792998478, "Misclassification Rate": 0.3462709284627093, "Accuracy (Hallucination)": 0.5700152207001522, "Accuracy (Misclassification)": 0.2237442922374429}
