@@ -32,10 +32,10 @@ def match_bbox_with_background(extracted_objects_path='intermediate_outputs/obje
             if label is None:
                 continue
 
+        obj['label'] = label        
         if bbox == "":
             if consider_pope_labels:
                 obj['is_hallucination'] = label
-                obj['is_misclassification'] = False
                 valid_objects.append(obj)
             continue
 
@@ -51,9 +51,6 @@ def match_bbox_with_background(extracted_objects_path='intermediate_outputs/obje
         obj['background_ratio'] = background_ratio
         is_hallucination = background_ratio > hallucination_threshold
         obj['is_hallucination'] = bool(is_hallucination)
-
-        if consider_pope_labels:
-            obj['is_misclassification'] = bool(not is_hallucination and not label)
 
         valid_objects.append(obj)
 
