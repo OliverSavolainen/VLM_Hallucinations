@@ -23,6 +23,7 @@ pipeline_out =[json.loads(q) for q in open(pipeline_output_file, 'r')]
 hallucination_no_bb_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'] and pipeline_out['bounding_box'] == "")
 hallucination_with_bb_and_correct_label_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'] and pipeline_out['bounding_box'] != "" and pipeline_out['label'] == True)
 hallucination_with_bb_and_incorrect_label_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'] and pipeline_out['bounding_box'] != "" and pipeline_out['label'] == False)
+miscl_count = sum(1 for pipeline_out in pipeline_out if not pipeline_out['is_hallucination'] and pipeline_out['bounding_box'] != "" and pipeline_out['label'] == False)
 
 total_objects = len(pipeline_out)
 
@@ -30,7 +31,7 @@ total_objects = len(pipeline_out)
 hallucination_no_bb_rate = hallucination_no_bb_count / total_objects if total_objects > 0 else 0
 hallucination_with_bb_and_correct_label_rate = hallucination_with_bb_and_correct_label_count / total_objects if total_objects > 0 else 0
 hallucination_with_bb_and_incorrect_label_rate = hallucination_with_bb_and_incorrect_label_count / total_objects if total_objects > 0 else 0
-
+miscl_rate = miscl_count / total_objects if total_objects > 0 else 0
 accuracy = (total_objects - hallucination_no_bb_count - hallucination_with_bb_and_correct_label_count - hallucination_with_bb_and_incorrect_label_count) / total_objects if total_objects > 0 else 0
 
 print('Total objects: {}'.format(total_objects))
@@ -40,6 +41,7 @@ print('Hallucinations with bounding boxes and "no" labels: {}'.format(hallucinat
 print('Hallucination rate with no bounding boxes: {}'.format(hallucination_no_bb_rate))
 print('Hallucination rate with bounding boxes and "yes" labels: {}'.format(hallucination_with_bb_and_correct_label_rate))
 print('Hallucination rate with bounding boxes and "no" labels: {}'.format(hallucination_with_bb_and_incorrect_label_rate))
+print('Misclassification rate: {}'.format(miscl_rate))
 print('Accuracy: {}'.format(accuracy))
 
 results = {
