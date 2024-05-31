@@ -14,7 +14,7 @@ parser.add_argument("--segmentation_masks", type=str, default="data/segmentation
 parser.add_argument("--output_file", type=str, default="pipeline_outputs/background_hallucinations.jsonl",help="Path to results JSONL file.")
 
 parser.add_argument("--bbox_output_file",type=str,default='intermediate_outputs/pope_objects_with_bboxes.jsonl',help="Path to JSONL file for extracted objects and their bounding boxes.")
-parser.add_argument("--hallucination_threshold", type=float, default=0.25,help="Ratio of background pixels in bbox to classify as hallucination. Float between 0.0 and 1.0.")
+parser.add_argument("--hallucination_threshold", type=float, default=0.75,help="Ratio of background pixels in bbox to classify as hallucination. Float between 0.0 and 1.0.")
 
 parser.add_argument("--pope_answer_file", type=str,default="coco/coco_pope_adversarial.json", help="POPE answer file, value for this determines if answers from POPE are considered when evaluating.")
 parser.add_argument("--sentence_transformer", type=str, default="all-MiniLM-L6-v2",help="Pretrained sentence transformer model to be used for matching extracted objects to target object classes.")
