@@ -4,7 +4,9 @@ import torch
 from torchvision.ops import box_iou
 def match_bboxes(labels_path='data/bbox_pope_images/labels.json',
                  extracted_objects_path ='intermediate_outputs/objects_with_bounding_boxes.jsonl',
-                 output_path = 'intermediate_outputs/bbox_iou_matched.jsonl', hallucination_threshold=0.5):
+                 output_path = 'intermediate_outputs/bbox_iou_matched.jsonl', hallucination_threshold=0.5,
+                 model_bbox_scale=1000.0):
+
 
     # Read ground truth labels in coco format
     with open(labels_path, 'r') as file:
@@ -45,7 +47,7 @@ def match_bboxes(labels_path='data/bbox_pope_images/labels.json',
         # Get image size
         img_size = image_sizes[image_id]
         # Get extracted bbox and scale it img_size
-        scaled_bbox = scale_bbox(object["bounding_box"], img_size)
+        scaled_bbox = scale_bbox(object["bounding_box"], img_size, model_bbox_scale)
         object["bounding_box"] = scaled_bbox
         # Object class
         object_class = object["object_name"]
@@ -84,11 +86,11 @@ def convert_bbox_format_coco2torch(bbox):
     converted_bbox = [x_min, y_min, x_max, y_max]
     return converted_bbox
 
-def scale_bbox(bbox, new_scale):
+def scale_bbox(bbox, new_scale,model_bbox_scale):
     # Convert from 1000x1000 cogvlm to image size given in new_scale
     # Also converts generated bbox from string to list of floats
     corners = bbox.split(",")
-    float_corners = [ float(corner)/1000 for corner in corners]
+    float_corners = [ float(corner)/model_bbox_scale for corner in corners]
     scaled_x0, scaled_x1 = (float_corners[0] * new_scale[0],
                             float_corners[2] * new_scale[0])
     scaled_y0, scaled_y1 = (float_corners[1] * new_scale[1],
