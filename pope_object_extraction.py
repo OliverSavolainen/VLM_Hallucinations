@@ -9,7 +9,7 @@ def extract_objects_with_bounding_boxes(text):
 
 def extract_object_name(prompt):
     # Capture the object name from the prompt
-    pattern = r'Is there a (\w+) in the image\?'
+    pattern = r'Is there a ([\w\s]+) in the image\?'
     match = re.search(pattern, prompt)
     if match:
         return match.group(1)
@@ -29,18 +29,26 @@ def extract_objects(input_file_path, output_file_path):
                 file_name = json_line.get("file", "")
 
                 text = json_line.get("text", "")
+                    
                 prompt = json_line.get("prompt", "")
                 object_name = extract_object_name(prompt)
+                bounding_boxes = extract_objects_with_bounding_boxes(text)
+                if bounding_boxes:
+                    for bbox in bounding_boxes:
+                        processed_objects.append({
+                            "question_id": file_name,
+                            "prompt": prompt,
+                            "object_name": object_name.capitalize() if object_name else "",
+                            "bounding_box": bbox
+                        })
+                else:
+                    processed_objects.append({
+                    "question_id": file_name,
+                    "prompt": prompt,
+                    "object_name": object_name.capitalize() if object_name else "",
+                    "bounding_box": ""
+                    })
 
-                if object_name:
-                    bounding_boxes = extract_objects_with_bounding_boxes(text)
-                    if bounding_boxes:  # Only process if bounding boxes are found
-                        for bbox in bounding_boxes:
-                            processed_objects.append({
-                                "question_id": file_name,
-                                "object_name": object_name.capitalize(),
-                                "bounding_box": bbox
-                            })
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 continue
@@ -51,4 +59,3 @@ def extract_objects(input_file_path, output_file_path):
             output_file.write(json_line + '\n')
 
     print(f"Objects with bounding boxes saved to '{output_jsonl_file_path}'")
-
