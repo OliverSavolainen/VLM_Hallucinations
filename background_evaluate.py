@@ -21,8 +21,8 @@ pipeline_out =[json.loads(q) for q in open(pipeline_output_file, 'r')]
 
 # Count the number of hallucinations and total objects
 hallucination_no_bb_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'] and pipeline_out['bounding_box'] == "")
-hallucination_with_bb_and_correct_label_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'] and pipeline_out['bounding_box'] != "" and pipeline_out['label'] == "yes")
-hallucination_with_bb_and_incorrect_label_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'] and pipeline_out['bounding_box'] != "" and pipeline_out['label'] == "no")
+hallucination_with_bb_and_correct_label_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'] and pipeline_out['bounding_box'] != "" and pipeline_out['label'] == True)
+hallucination_with_bb_and_incorrect_label_count = sum(1 for pipeline_out in pipeline_out if pipeline_out['is_hallucination'] and pipeline_out['bounding_box'] != "" and pipeline_out['label'] == False)
 
 total_objects = len(pipeline_out)
 
