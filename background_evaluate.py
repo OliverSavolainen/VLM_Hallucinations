@@ -28,8 +28,8 @@ total_objects = len(pipeline_out)
 
 # Calculate accuracy
 hallucination_no_bb_rate = hallucination_no_bb_count / total_objects if total_objects > 0 else 0
-hallucination_with_bb_and_correct_label_rate = hallucination_no_bb_count / total_objects if total_objects > 0 else 0
-hallucination_with_bb_and_incorrect_label_rate = hallucination_no_bb_count / total_objects if total_objects > 0 else 0
+hallucination_with_bb_and_correct_label_rate = hallucination_with_bb_and_correct_label_count / total_objects if total_objects > 0 else 0
+hallucination_with_bb_and_incorrect_label_rate = hallucination_with_bb_and_incorrect_label_count / total_objects if total_objects > 0 else 0
 
 accuracy = (total_objects - hallucination_no_bb_count - hallucination_with_bb_and_correct_label_count - hallucination_with_bb_and_incorrect_label_count) / total_objects if total_objects > 0 else 0
 
