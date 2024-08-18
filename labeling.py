@@ -92,7 +92,13 @@ class ImageLabeler:
             model_answer = "Yes"
         object_name = obj["object_name"]
         prompt = obj["prompt"].split("\n")[0]
-        text = f"Question: {prompt} \n Object name: {object_name} \n Model answer: {model_answer}"
+
+        if "ground_truth" in obj.keys():
+            ground_truth = obj["ground_truth"]
+        else:
+            ground_truth = ""
+
+        text = f"Question: {prompt} \n Object name: {object_name} \n Model answer: {model_answer} \n Label: {ground_truth}"
 
         print(obj["bounding_box"])
         if obj["bounding_box"] == "":
@@ -101,13 +107,13 @@ class ImageLabeler:
             self.image = Image.open(BytesIO(response.content))
 
         else:
-
-
             image = Image.open(BytesIO(response.content))
             self.image = draw_boxes(image, obj["bounding_box"])
 
 
         self.photo = ImageTk.PhotoImage(self.image)
+
+
 
         # Display the image
         if hasattr(self, 'label'):
@@ -115,6 +121,8 @@ class ImageLabeler:
         else:
             self.label = tk.Label(self.root, image=self.photo)
             self.label.pack()
+
+
 
         # Display the text
         if hasattr(self, 'text_label'):
@@ -158,9 +166,10 @@ if __name__ == "__main__":
 
     # Replace with your list of image URLs
     data = []
-    with jsonlines.open('intermediate_outputs/pope_objects_with_bboxes.jsonl') as reader:
+    with jsonlines.open('labeled_grounded_pope_answers.jsonl') as reader:
         for obj in reader:
             data.append(obj)
+
 
     with open('data/bbox_pope_images/labels.json') as f:
         labels = json.load(f)
@@ -173,7 +182,7 @@ if __name__ == "__main__":
 
     labeled_data = app.model_answers
 
-    with open("labeled_grounded_pope_answers", 'w') as output_file:
+    with open("labeled_grounded_pope_answers.jsonl", 'w') as output_file:
         for obj in labeled_data:
             json_line = json.dumps(obj)
             output_file.write(json_line + '\n')
