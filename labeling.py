@@ -30,57 +30,11 @@ def draw_boxes(image, bbox):
     return image
 
 
-
-
-
-
-
-
-
-
-
-#
-# for obj in data:
-#     image_id = obj["question_id"]
-#
-#
-#
-#
-#     image_url = image_urls.get(image_id)
-#     if not image_url:
-#         print(f"Image URL for {image_id} not found.")
-#         continue
-#
-#     response = requests.get(image_url)
-#     if response.status_code != 200:
-#         print(f"Failed to download image {image_id}")
-#         continue
-#     if obj["bounding_box"] == "":
-#         continue
-#     image = Image.open(BytesIO(response.content))
-#
-#     model_answer = ""
-#     if obj["is_no_answer"]:
-#         model_answer = "No"
-#     else:
-#         model_answer = "Yes"
-#     object_name = obj["object_name"]
-#     text = f"Object name: {object_name} Model answer: {model_answer}"
-#
-#     image_with_boxes = draw_boxes(image, obj["bounding_box"], text)
-#
-#     plt.figure(figsize=(12, 8))
-#     plt.imshow(image_with_boxes)
-#     plt.axis('off')
-#     plt.title(image_id)
-#     plt.show()
-#     break
-
 import tkinter as tk
 from PIL import Image, ImageTk
 import requests
 from io import BytesIO
-import csv
+
 
 
 class ImageLabeler:
@@ -90,7 +44,7 @@ class ImageLabeler:
 
         self.model_answers = data
         self.image_urls = image_urls
-        self.current_answer_index = 19
+        self.current_answer_index = 0
 
         # Load the first image
         self.load_model_pred()
@@ -142,6 +96,8 @@ class ImageLabeler:
 
         print(obj["bounding_box"])
         if obj["bounding_box"] == "":
+            if model_answer == "Yes":
+                self.next_image()
             self.image = Image.open(BytesIO(response.content))
 
         else:

@@ -13,16 +13,29 @@ def extract_no_answers(text):
 
 def extract_objects_with_bounding_boxes(text,bbox_regex):
     pattern = r'(\b\w+\b)\s*' + bbox_regex
+    # pattern = bbox_regex
     matches = re.findall(pattern, text)
 
     results = []
-    for obj, bbox_str in matches:
-        # Split the bounding box string by semicolons for multiple instances
-        bboxes = bbox_str.split(';')
-        # Convert each bounding box to a list of floats and pair with the object
-        for bbox in bboxes:
 
-            results.append((obj, bbox))
+    if len(matches) == 0:
+        matches = re.findall(bbox_regex, text)
+        for bbox_str in matches:
+            # Split the bounding box string by semicolons for multiple instances
+            bboxes = bbox_str.split(';')
+            # Convert each bounding box to a list of floats and pair with the object
+            for bbox in bboxes:
+                results.append(("no_object_name", bbox))
+
+
+    else:
+        for obj, bbox_str in matches:
+            # Split the bounding box string by semicolons for multiple instances
+            bboxes = bbox_str.split(';')
+            # Convert each bounding box to a list of floats and pair with the object
+            for bbox in bboxes:
+                results.append((obj, bbox))
+
 
     return results
 def extract_object_name(prompt):
@@ -135,3 +148,7 @@ def extract_objects(input_file_path, output_file_path,bbox_regex):
     print(f"Objects with bounding boxes saved to '{output_jsonl_file_path}'")
 
 
+# text = "[[000,429,997,940]]"
+#
+# bbox_regex = "\[\[(\d{3},\d{3},\d{3},\d{3})\]\]"
+# print(extract_objects_with_bounding_boxes(text,bbox_regex))
