@@ -25,6 +25,7 @@ def parse_args():
     parser.add_argument("--total_batches", type=int, default=4, help="Total number of batches")
     parser.add_argument("--template", type=str, help="Template for generating new prompts, includes <expr> as a placeholder.")
     parser.add_argument("--remove_second_line", action="store_true", help="Remove everything after a newline in the prompt")
+    parser.add_argument("--category", type=str, default="adversarial", help="Category of prompts to filter and use from the prompts file.")
     return parser.parse_args()
 
 def load_model(args):
@@ -51,9 +52,7 @@ def load_prompts(prompts_file, remove_second_line, category):
                 data = json.loads(line)
                 image_name = data.get('image')
                 prompt_text = data.get('text')
-                prompt_category = data.get('category', 'default')  # Assuming 'category' key exists, or 'default' if not
-                
-                # Skip prompts that don't match the specified category
+                prompt_category = data.get('category', 'wrong')
                 if prompt_category != category:
                     continue
                 
@@ -129,7 +128,7 @@ def main():
     tokenizer = LlamaTokenizer.from_pretrained(args.local_tokenizer)
 
     if args.prompts_file:
-        prompts_dict = load_prompts(args.prompts_file, args.remove_second_line)
+        prompts_dict = load_prompts(args.prompts_file, args.remove_second_line, args.category)
 
     file_mode = 'a' if os.path.exists("model_outputs/prompts_cogvlm_outputs.jsonl") else 'w'
 
