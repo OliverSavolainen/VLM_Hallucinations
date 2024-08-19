@@ -43,20 +43,35 @@ def load_model(args):
     ).eval()
     return model, device
 
-def load_prompts(prompts_file, remove_second_line):
+def load_prompts(prompts_file, remove_second_line, category):
     prompt_dict = {}
     with open(prompts_file, 'r') as file:
         for line in file:
-            data = json.loads(line)
-            image_name = data['image']
-            prompt_text = data['text']
-            if remove_second_line:
-                prompt_text = prompt_text.split('\n', 1)[0]
-            
-            if image_name not in prompt_dict:
-                prompt_dict[image_name] = []
-            if prompt_text not in prompt_dict[image_name]:
-                prompt_dict[image_name].append(prompt_text)
+            try:
+                data = json.loads(line)
+                image_name = data.get('image')
+                prompt_text = data.get('text')
+                prompt_category = data.get('category', 'default')  # Assuming 'category' key exists, or 'default' if not
+                
+                # Skip prompts that don't match the specified category
+                if prompt_category != category:
+                    continue
+                
+                if image_name is None or prompt_text is None:
+                    print(f"Skipping malformed line: {line}")
+                    continue
+
+                if remove_second_line:
+                    prompt_text = prompt_text.split('\n', 1)[0]
+
+                if image_name not in prompt_dict:
+                    prompt_dict[image_name] = []
+
+                if prompt_text not in prompt_dict[image_name]:
+                    prompt_dict[image_name].append(prompt_text)
+            except json.JSONDecodeError:
+                print(f"Skipping invalid JSON line: {line}")
+
     return prompt_dict
 
 def load_images(args):
