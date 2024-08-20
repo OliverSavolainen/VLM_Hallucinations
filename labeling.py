@@ -39,6 +39,7 @@ from io import BytesIO
 
 class ImageLabeler:
     def __init__(self, root, data, image_urls, start_index):
+
         self.root = root
         self.root.title("Image Labeler")
 
@@ -46,8 +47,20 @@ class ImageLabeler:
         self.image_urls = image_urls
         self.current_answer_index = start_index
 
+        self.zoom_factor = 1.0
+
+
+
+
+
         # Load the first image
         self.load_model_pred()
+
+        # Bind mouse scroll event to zoom in/out
+        self.root.bind("<MouseWheel>", self.zoom)
+
+        # Display the initial image
+        self.update_image()
 
         # Add Yes, No, Previous, and Next buttons
         self.hallucination_button = tk.Button(root, text="Hallucination", command=lambda: self.label_answer("Hallucination"))
@@ -114,9 +127,25 @@ class ImageLabeler:
             image = Image.open(BytesIO(response.content))
             self.image = draw_boxes(image, obj["bounding_box"])
 
+        self.original_image = self.image
 
-        self.photo = ImageTk.PhotoImage(self.image)
+        self.text = text
 
+
+
+        self.update_image()
+        #self.photo = ImageTk.PhotoImage(self.image)
+
+        self.root.title(f"Image Labeler - {image_url}")
+
+    def update_image(self):
+        # Resize the image based on the current zoom factor
+        width, height = self.original_image.size
+        new_size = (int(width * self.zoom_factor), int(height * self.zoom_factor))
+        resized_image = self.original_image.resize(new_size, Image.Resampling.LANCZOS)
+
+        # Convert the resized image to a PhotoImage and display it
+        self.photo = ImageTk.PhotoImage(resized_image)
 
 
         # Display the image
@@ -126,16 +155,23 @@ class ImageLabeler:
             self.label = tk.Label(self.root, image=self.photo)
             self.label.pack()
 
-
-
         # Display the text
         if hasattr(self, 'text_label'):
-            self.text_label.config(text=text)
+            self.text_label.config(text=self.text)
         else:
-            self.text_label = tk.Label(self.root, text=text, wraplength=400)
+            self.text_label = tk.Label(self.root, text=self.text, wraplength=400)
             self.text_label.pack()
 
-        self.root.title(f"Image Labeler - {image_url}")
+
+    def zoom(self, event):
+        # Adjust the zoom factor based on the scroll direction
+        if event.delta > 0:
+            self.zoom_factor *= 1.1  # Zoom in
+        elif event.delta < 0:
+            self.zoom_factor /= 1.1  # Zoom out
+
+        # Update the displayed image
+        self.update_image()
 
     def label_answer(self, label):
         self.model_answers[self.current_answer_index]["ground_truth"] = label
