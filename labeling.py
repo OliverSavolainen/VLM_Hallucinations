@@ -38,13 +38,13 @@ from io import BytesIO
 
 
 class ImageLabeler:
-    def __init__(self, root, data, image_urls):
+    def __init__(self, root, data, image_urls, start_index):
         self.root = root
         self.root.title("Image Labeler")
 
         self.model_answers = data
         self.image_urls = image_urls
-        self.current_answer_index = 0
+        self.current_answer_index = start_index
 
         # Load the first image
         self.load_model_pred()
@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
     start_index = 0
     end_index = 999
-    saved_labels_file_name = f"labeled_grounded_pope_answers_{start_index}_{end_index}.jsonl"
+    saved_labels_file_name = "labeled_grounded_pope_answers_0_999.jsonl"
 
     # Replace with your list of image URLs
     data = []
@@ -185,7 +185,7 @@ if __name__ == "__main__":
 
     image_urls = {img['file_name']: img['coco_url'] for img in labels['images']}
 
-    app = ImageLabeler(root, data, image_urls)
+    app = ImageLabeler(root, data, image_urls, start_index)
     root.protocol("WM_DELETE_WINDOW", app.on_close)  # Ensure the file is closed when the window is closed
     root.mainloop()
 
