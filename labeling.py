@@ -60,6 +60,10 @@ class ImageLabeler:
                                                   command=lambda: self.label_answer("Correct"))
         self.correct_button.pack(side="left", padx=10, pady=10)
 
+        self.unsure_button = tk.Button(root, text="Unsure",
+                                        command=lambda: self.label_answer("Unsure"))
+        self.unsure_button.pack(side="left", padx=10, pady=10)
+
 
         self.prev_button = tk.Button(root, text="Previous", command=self.prev_image)
         self.prev_button.pack(side="left", padx=10, pady=10)
@@ -174,7 +178,7 @@ if __name__ == "__main__":
     with jsonlines.open(saved_labels_file_name) as reader:
         for obj in reader:
             data.append(obj)
-    
+
     # with jsonlines.open('intermediate_outputs/pope_objects_with_bboxes.jsonl') as reader:
     #     for obj in reader:
     #         data.append(obj)
