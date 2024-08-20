@@ -170,6 +170,10 @@ if __name__ == "__main__":
         for obj in reader:
             data.append(obj)
 
+    # with jsonlines.open('intermediate_outputs/pope_objects_with_bboxes.jsonl') as reader:
+    #     for obj in reader:
+    #         data.append(obj)
+
 
     with open('data/bbox_pope_images/labels.json') as f:
         labels = json.load(f)
