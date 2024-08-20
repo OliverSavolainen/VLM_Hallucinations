@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
 
     start_index = 0
-    end_index = 999
+
     saved_labels_file_name = "labeled_grounded_pope_answers_0_999.jsonl"
 
     # Replace with your list of image URLs
