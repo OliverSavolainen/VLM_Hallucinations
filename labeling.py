@@ -164,12 +164,17 @@ class ImageLabeler:
 if __name__ == "__main__":
     root = tk.Tk()
 
+
+    start_index = 0
+    end_index = 999
+    saved_labels_file_name = f"labeled_grounded_pope_answers_{start_index}_{end_index}.jsonl"
+
     # Replace with your list of image URLs
     data = []
-    with jsonlines.open('labeled_grounded_pope_answers.jsonl') as reader:
+    with jsonlines.open(saved_labels_file_name) as reader:
         for obj in reader:
             data.append(obj)
-
+    data = data[start_index:end_index]
     # with jsonlines.open('intermediate_outputs/pope_objects_with_bboxes.jsonl') as reader:
     #     for obj in reader:
     #         data.append(obj)
@@ -186,7 +191,9 @@ if __name__ == "__main__":
 
     labeled_data = app.model_answers
 
-    with open("labeled_grounded_pope_answers.jsonl", 'w') as output_file:
+
+
+    with open(saved_labels_file_name, 'w') as output_file:
         for obj in labeled_data:
             json_line = json.dumps(obj)
             output_file.write(json_line + '\n')
