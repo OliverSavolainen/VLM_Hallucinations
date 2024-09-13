@@ -3,93 +3,7 @@ import re
 import json
 import h5py
 import numpy as np
-
-
-# Object extraction utils
-
-# Extract answers with no in it
-def extract_no_answers(text):
-    pattern = r"\b(no|not)\b"
-    matches = re.findall(pattern, text,re.IGNORECASE)
-    if len(matches) > 0:
-        return True
-    else:
-        return False
-
-# Capture the object name from the prompt
-def extract_object_name(prompt):
-    pattern = r'Is there a ([\w\s]+) in the image\?'
-    match = re.search(pattern, prompt)
-    if match:
-        return match.group(1)
-    return None
-
-
-def extract_objects_with_bounding_boxes(text,bbox_regex):
-    pattern = r'(\b\w+\b)\s*' + bbox_regex
-
-    matches = re.findall(pattern, text)
-
-    results = []
-
-    # No match try with only bbox without object name
-    if len(matches) == 0:
-        matches = re.findall(bbox_regex, text)
-        for bbox_str in matches:
-            # Split the bounding box string by semicolons for multiple instances
-            bboxes = bbox_str.split(';')
-            # Convert each bounding box to a list of floats and pair with the object
-            for bbox in bboxes:
-                results.append(("no_object_name", bbox))
-
-    else:
-        for obj, bbox_str in matches:
-            # Split the bounding box string by semicolons for multiple instances
-            bboxes = bbox_str.split(';')
-            # Convert each bounding box to a list of floats and pair with the object
-            for bbox in bboxes:
-                results.append((obj, bbox))
-    return results
-
-def get_object_output_dict(question_id,prompt,object_name,bbox,is_no_answer,is_yes_no_bbox):
-
-    return { "question_id": question_id,
-        "prompt": prompt,
-        "object_name": object_name.capitalize() if object_name else "",
-        "bounding_box": bbox,
-        "is_no_answer": is_no_answer,
-        "is_yes_no_bbox": is_yes_no_bbox}
-
-
-
-
-# Bbox matching utils
-def scale_bbox(bbox, new_scale, model_bbox_scale):
-    corners = bbox.split(",")
-    float_corners = [float(corner) / model_bbox_scale for corner in corners]
-    scaled_x0, scaled_x1 = (int(float_corners[0] * new_scale[0]),
-                                int(float_corners[2] * new_scale[0]))
-    scaled_y0, scaled_y1 = (int(float_corners[1] * new_scale[1]),
-                                int(float_corners[3] * new_scale[1]))
-    return scaled_x0, scaled_y0, scaled_x1, scaled_y1
-
-def load_labels(label_file_path):
-    labels = {}
-    with open(label_file_path, 'r') as file:
-        for line in file:
-            label = json.loads(line)
-            image_name = label['image']
-            prompt = label['text']
-            labels[(image_name, prompt)] = label['label']
-    return labels
-
-def find_label_for_prompt(prompt, image_name, labels):
-    for (img, q_prompt), label in labels.items():
-        if img == image_name and q_prompt in prompt:
-            return label
-    return None
-
-
+import utils
 
 def run_pipeline(args):
     # Extract objects and bboxes from answer file
@@ -103,27 +17,27 @@ def run_pipeline(args):
                 text = json_line.get("text", "")
 
                 prompt = json_line.get("prompt", "")
-                object_name = extract_object_name(prompt)
+                object_name = utils.extract_object_name(prompt)
 
                 # If no answer no need for bboxes
-                isNoAnswer = extract_no_answers(text)
+                isNoAnswer = utils.extract_no_answers(text)
                 if isNoAnswer:
-                    processed_objects.append(get_object_output_dict(file_name, prompt, object_name, "", True, False))
+                    processed_objects.append(utils.get_object_output_dict(file_name, prompt, object_name, "", True, False))
 
                 # Yes answers
                 else:
                     # Extract bboxes
-                    bounding_boxes = extract_objects_with_bounding_boxes(text, args.bbox_regex)
+                    bounding_boxes = utils.extract_objects_with_bounding_boxes(text, args.bbox_regex)
                     # no bbox
                     if len(bounding_boxes) == 0:
                         processed_objects.append(
-                            get_object_output_dict(file_name, prompt, object_name, "", False, True))
+                            utils.get_object_output_dict(file_name, prompt, object_name, "", False, True))
 
                     # Only 1 bbox
                     elif len(bounding_boxes) == 1:
                         for obj, bbox in bounding_boxes:
                             processed_objects.append(
-                                get_object_output_dict(file_name, prompt, object_name, bbox, False, False))
+                                utils.get_object_output_dict(file_name, prompt, object_name, bbox, False, False))
 
                     # multiple bboxes select question object
                     else:
@@ -133,13 +47,13 @@ def run_pipeline(args):
                                 break
                             if obj.lowercase() == object_name.lowercase():
                                 processed_objects.append(
-                                    get_object_output_dict(file_name, prompt, object_name, bbox, False, False))
+                                    utils.get_object_output_dict(file_name, prompt, object_name, bbox, False, False))
                                 q_obj_found = True
 
                         if not q_obj_found:
                             # Not question object bbox
                             processed_objects.append(
-                                get_object_output_dict(file_name, prompt, object_name, "", False, True))
+                                utils.get_object_output_dict(file_name, prompt, object_name, "", False, True))
 
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
@@ -159,14 +73,14 @@ def run_pipeline(args):
             segmentations[image_name] = hf.get(image_name)[:]
 
     # Load POPE labels
-    labels = load_labels(args.pope_labels_file)
+    labels = utils.load_labels(args.pope_labels_file)
 
     valid_objects = []
     for obj in processed_objects:
         image_name = obj['question_id']
         bbox = obj["bounding_box"]
 
-        label = find_label_for_prompt(obj["prompt"], image_name, labels)
+        label = utils.find_label_for_prompt(obj["prompt"], image_name, labels)
         if label is None:
             continue
 
@@ -205,7 +119,7 @@ def run_pipeline(args):
             # Compare bbox with background pixels
             # Scale bbox coords to segmentation mask size
             segmentation_mask = segmentations[image_name]
-            x0, y0, x1, y1 = scale_bbox(bbox, segmentation_mask.shape, args.model_bbox_scale)
+            x0, y0, x1, y1 = utils.scale_bbox(bbox, segmentation_mask.shape, args.model_bbox_scale)
             # Get the segmentation mask corresponding to the bbox
             masked_bbox = segmentation_mask[x0:x1, y0:y1]
             # Count number of background pixels (zeros)

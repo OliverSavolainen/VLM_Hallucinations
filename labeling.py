@@ -2,7 +2,6 @@ import jsonlines
 import json
 import requests
 from PIL import Image, ImageDraw, ImageFont
-import matplotlib.pyplot as plt
 from io import BytesIO
 
 def scale_bbox(bbox, new_scale,model_bbox_scale):
@@ -207,7 +206,7 @@ if __name__ == "__main__":
 
     start_index = 0
 
-    saved_labels_file_name = "labeled_grounded_pope_answers_0_999.jsonl"
+    saved_labels_file_name = "labeled_grounded_pope_answers.jsonl"
 
     # Replace with your list of image URLs
     data = []

@@ -15,11 +15,14 @@ def evaluate_threshold(pipeline_output_file, gt_file):
         if pipe_out['is_our_hallucination']:
             y_pred.append("Hallucination")
         elif pipe_out['is_misclassification']:
+            # y_pred.append("Hallucination")
             y_pred.append("Misclassification")
         else:
             y_pred.append("Correct")
 
+    # y_true = [ground_truth["ground_truth"] if ground_truth["ground_truth"] != "Misclassification" else "Hallucination" for ground_truth in ground_truths]
     y_true = [ground_truth["ground_truth"] for ground_truth in ground_truths]
+
 
 
     labels = ["Correct", "Hallucination", "Misclassification"]
