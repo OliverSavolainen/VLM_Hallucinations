@@ -44,64 +44,72 @@ def evaluate_threshold(pipeline_output_file, gt_file):
         f.write(report)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
 
-    thresholds = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    #thresholds = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    thresholds = [0.9]
 
     for threshold in thresholds:
         # Set up command line argument parsing
+        # Set up command line argument parsing
         parser = argparse.ArgumentParser(
             description="Grounded POPE pipeline")
+
         # Grounded model name
         parser.add_argument("--model_name", type=str, default="cog_vlm", help="Name of the grounded model.")
+
         # Pipeline input, outputs from the grounded model
         parser.add_argument("--input_file", type=str, default="model_outputs/prompts_cogvlm_outputs.jsonl",
                             help="Path to the JSONL file containing model answers to POPE questions.")
+
         # Output file of the pipeline
         parser.add_argument("--output_file", type=str, default="pipeline_outputs/G_POPE.jsonl",
                             help="Path to results JSONL file.")
+
         # Intermediate output containing bboxes and objects extracted from answer file
         parser.add_argument("--bbox_output_file", type=str,
                             default='intermediate_outputs/pope_objects_with_bboxes.jsonl',
                             help="Path to JSONL file for extracted objects and their bounding boxes.")
+
         # POPE Labels
         parser.add_argument("--pope_labels_file", type=str, default="coco/coco_pope_adversarial.json",
                             help="POPE labels file, value for this determines if answers from POPE are considered when evaluating.")
+        # COCO Annotations
+        parser.add_argument("--bbox_labels_file", type=str, default="data/bbox_pope_images/labels.json",
+                            help="Path to the JSONL file containing grountruth bounding boxes.")
+
         # Segmentation masks to be used for background foreground separation
         parser.add_argument("--segmentation_masks", type=str,
                             default="data/segmentation_masks/segmentation_masks_ade20k.h5",
                             help="Path to the h5 file containing segmentation masks.")
+
         # Ratio of background pixels to be considered hallucination
         parser.add_argument("--hallucination_threshold", type=float, default=threshold,
                             help="Ratio of background pixels in bbox to classify as hallucination. Float between 0.0 and 1.0.")
+        # Misclassification threshold
+        parser.add_argument("--misclassification_threshold", type=float, default=0.3,
+                            help="Threshold for cosine similarity between generated and best match bounding box object. "
+                                 "Cosine similarity less than the threshold is considered misclassification. Float between 0.0 and 1.0.")
+
         # Bbox coordinate scale of the grounded model
         parser.add_argument("--model_bbox_scale", type=float, default=1000.0,
                             help="Coordinate range of the grounded model bounding boxes in (max_width, max_height) format as tuple of floats. "
                                  "1000.0 for CogVLM, 1.0 for Shikra.")
+
         # Bounding box regex
         parser.add_argument("--bbox_regex", type=str, default="\[\[(\d{3},\d{3},\d{3},\d{3})\]\]",
                             help="Regex of bounding box depending on the grounded model bbox format. Cogvlm = \[\[(\d{3},\d{3},\d{3},\d{3})\]\] "
                                  ", shikra = \[(\d+\.\d+(?:,\d+\.\d+){3}(?:;\d+\.\d+(?:,\d+\.\d+){3})*)\]  ")
+
+        # Boolean to use segmentation masks or bbox matching
+        parser.add_argument("--use_segmentation_mask", type=bool,
+                            default=False,
+                            help="Flag to use segmentation masks or bbox matching.")
+
+        # Pretrained sentence transformer
+        parser.add_argument("--sentence_transformer", type=str, default="all-MiniLM-L6-v2",
+                            help="Pretrained sentence transformer model to be used for matching extracted objects to target object classes.")
+
         args = parser.parse_args()
 
         run_pipeline(args)
